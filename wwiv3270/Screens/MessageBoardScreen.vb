@@ -78,16 +78,25 @@ Namespace WWIV.Screens
             Dim row = 5
             Dim startIdx = Math.Max(0, _messages.Count - 15) ' Show last 15
             
-            For i = startIdx To _messages.Count - 1
-                Dim msg = _messages(i)
-                Dim msgNum = (i + 1).ToString().PadLeft(3)
-                Dim from = msg.FromName.Trim().PadRight(20).Substring(0, 20)
-                Dim mdate = msg.DatePosted.ToString("MM/dd/yy")
-                Dim title = msg.Title.Trim().PadRight(35).Substring(0, 35)
-                
-                tn.WriteText(row, 2, $"{msgNum}  {from}  {mdate}  {title}")
-                row += 1
-            Next
+            If _messages.Count = 0 Then
+                tn.WriteText(row, 2, "   (No messages in this sub-board)")
+            Else
+                For i = startIdx To _messages.Count - 1
+                    Dim msg = _messages(i)
+                    Dim msgNum = (i + 1).ToString().PadLeft(3)
+                    Dim fromName = If(String.IsNullOrEmpty(msg.FromName), "Unknown", msg.FromName.Trim())
+                    If fromName.Length > 20 Then fromName = fromName.Substring(0, 20)
+                    fromName = fromName.PadRight(20)
+                    
+                    Dim mdate = msg.DatePosted.ToString("MM/dd/yy")
+                    Dim title = If(String.IsNullOrEmpty(msg.Title), "(No Subject)", msg.Title.Trim())
+                    If title.Length > 35 Then title = title.Substring(0, 35)
+                    title = title.PadRight(35)
+                    
+                    tn.WriteText(row, 2, $"{msgNum}  {fromName}  {mdate}  {title}")
+                    row += 1
+                Next
+            End If
             
             tn.WriteText(22, 2, "Command:")
             tn.AddField(22, 11, 20, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
@@ -109,7 +118,7 @@ Namespace WWIV.Screens
             tn.WriteText(7, 2, "──────────────────────────────────────────────────────────────────────────")
             
             ' Message Body
-            Dim bodyLines = msg.Text.Split(New String() {Environment.NewLine}, StringSplitOptions.None)
+            Dim bodyLines = If(msg.Text, "").Split(New String() {Environment.NewLine, vbLf, vbCr}, StringSplitOptions.None)
             Dim row = 8
             For Each line In bodyLines
                 If row > 21 Then Exit For
@@ -126,17 +135,17 @@ Namespace WWIV.Screens
             tn.WriteText(4, 2, "──────────────────────────────────────────────────────────────────────────")
             
             Dim row = 5
-            For i = 0 To _subBoards.Count - 1
-                Dim subBoard = _subBoards(i)
+            For i = 0 To Math.Min(_subBoards.Count - 1, 15)
+                Dim sBoard = _subBoards(i)
                 Dim selector = If(i = _currentSubIdx, ">>", "  ")
-                tn.WriteText(row, 2, $"{selector} {i + 1}. {subBoard.Name}")
+                tn.WriteText(row, 2, $"{selector} {i + 1}. {sBoard.Name}")
                 row += 1
             Next
             
             tn.WriteText(22, 2, "Enter Sub # to Join:")
             tn.AddField(22, 24, 10, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
         End Sub
-
+ 
         Private Sub RenderPost(tn As TN3270Session)
             tn.WriteText(4, 10, "Subject            :", TN3270Color.Turquoise)
             tn.AddField(4, 32, 40, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "subject")
@@ -150,7 +159,7 @@ Namespace WWIV.Screens
             tn.AddField(12, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line6")
             tn.AddField(13, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line7")
         End Sub
-
+ 
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
             If TypeOf session Is TN3270SessionAdapter Then
                 HandleTN3270Input(DirectCast(session, TN3270SessionAdapter), DirectCast(input, AidKeyEventArgs))
@@ -165,9 +174,15 @@ Namespace WWIV.Screens
                 
                 If _viewMode = MessageViewMode.List Then
                     If String.IsNullOrEmpty(cmd) Then
-                        _viewMode = MessageViewMode.List
-                    ElseIf Integer.TryParse(cmd, Nothing) Then
+                        ' Default action for ENTER on empty command in List mode: Read first unread or first message
+                        If _messages.Count > 0 Then
+                            _currentMessageIdx = 0
+                            _viewMode = MessageViewMode.Read
+                        End If
+                    ElseIf IsNumeric(cmd) Then
                         _currentMessageIdx = Integer.Parse(cmd) - 1
+                        If _currentMessageIdx < 0 Then _currentMessageIdx = 0
+                        If _currentMessageIdx >= _messages.Count Then _currentMessageIdx = _messages.Count - 1
                         _viewMode = MessageViewMode.Read
                     Else
                         Select Case cmd
@@ -178,10 +193,14 @@ Namespace WWIV.Screens
                                 _viewMode = MessageViewMode.Join
                             Case "P"
                                 _viewMode = MessageViewMode.Post
+                            Case "R"
+                                ' Wait for number or just read first if "R" alone?
+                                _currentMessageIdx = 0
+                                _viewMode = MessageViewMode.Read
                         End Select
                     End If
                 ElseIf _viewMode = MessageViewMode.Join Then
-                    If Integer.TryParse(cmd, Nothing) Then
+                    If IsNumeric(cmd) Then
                         Dim newSub = Integer.Parse(cmd) - 1
                         If newSub >= 0 AndAlso newSub < _subBoards.Count Then
                             _currentSubIdx = newSub
@@ -211,9 +230,11 @@ Namespace WWIV.Screens
                     End If
                 End If
                 
+                tn.ClearFields()
                 RenderTN3270(session)
             ElseIf e.AidKey = &HC3 Then ' PF3
-                If _viewMode = MessageViewMode.Post OrElse _viewMode = MessageViewMode.Join Then
+                tn.ClearFields()
+                If _viewMode = MessageViewMode.Post OrElse _viewMode = MessageViewMode.Join OrElse _viewMode = MessageViewMode.Read Then
                     _viewMode = MessageViewMode.List
                     RenderTN3270(session)
                 Else
@@ -242,8 +263,8 @@ Namespace WWIV.Screens
             Dim msg As New MessageHeader With {
                 .Title = subject,
                 .Text = body.TrimEnd(),
-                .FromName = session.User.Name,
-                .FromUserNumber = session.User.UserNumber,
+                .FromName = If(session.User?.Name, "Unknown"),
+                .FromUserNumber = If(session.User?.UserNumber, 0),
                 .DatePosted = DateTime.Now
             }
             
@@ -252,6 +273,7 @@ Namespace WWIV.Screens
             ' Reset and return to list
             _viewMode = MessageViewMode.List
             _messages = _boardService.GetMessages(_subBoards(_currentSubIdx).Number)
+            tn.ClearFields()
             RenderTN3270(session)
         End Sub
     End Class

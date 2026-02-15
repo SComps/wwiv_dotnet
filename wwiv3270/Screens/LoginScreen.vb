@@ -7,6 +7,9 @@ Namespace WWIV.Screens
     Public Class LoginScreen
         Implements IScreen
 
+        Private _telnetUserId As String = ""
+        Private _telnetState As Integer = 0 ' 0=UserId, 1=Password
+
         Public Sub Activate(session As ISession) Implements IScreen.Activate
             ' Check if this is a TN3270 session or Telnet
             If TypeOf session Is TN3270SessionAdapter Then
@@ -53,14 +56,35 @@ Namespace WWIV.Screens
             session.WriteLine("╚══════════════════════════════════════════════════════════════════╝")
             session.WriteLine("")
             session.Write("User ID: ")
-            ' Note: For Telnet, we need async input handling which will be implemented later
         End Sub
 
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
             If TypeOf session Is TN3270SessionAdapter Then
                 HandleTN3270Input(DirectCast(session, TN3270SessionAdapter), DirectCast(input, AidKeyEventArgs))
             Else
-                ' Telnet input handling - to be implemented
+                HandleTelnetInput(session, CStr(input))
+            End If
+        End Sub
+
+        Private Sub HandleTelnetInput(session As ISession, input As String)
+            If _telnetState = 0 Then
+                _telnetUserId = input.Trim()
+                If _telnetUserId.ToUpper() = "NEW" Then
+                    session.NavigateTo(New NewUserScreen())
+                    Return
+                End If
+                _telnetState = 1
+                session.Write("Password: ")
+            Else
+                Dim password = input.Trim()
+                If ValidateLogin(_telnetUserId, password, session) Then
+                    session.WriteLine("Login successful!")
+                    session.NavigateTo(New MainMenuScreen())
+                Else
+                    session.WriteLine("Invalid login.")
+                    _telnetState = 0
+                    session.Write("User ID: ")
+                End If
             End If
         End Sub
 
@@ -102,8 +126,6 @@ Namespace WWIV.Screens
         End Sub
 
         Private Function ValidateLogin(userId As String, password As String, session As ISession) As Boolean
-            ' NEW user registration is now handled in HandleTN3270Input
-            
             ' Use UserService to find and validate user
             Dim userService As New Services.UserService()
             Dim user = userService.ValidateCredentials(userId, password)

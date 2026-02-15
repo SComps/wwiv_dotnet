@@ -1,5 +1,7 @@
 Imports System
+Imports System.IO
 Imports System.Threading
+Imports System.Threading.Tasks
 Imports TN3270Framework
 Imports wwiv3270.WWIV.Telnet
 Imports wwiv3270.WWIV.Manager
@@ -77,18 +79,27 @@ Namespace WWIV
             Task.Run(Sub() HandleTelnetSession(adapter))
         End Sub
 
-        Private Sub HandleTelnetSession(session As TelnetSessionAdapter)
+        Private Async Function HandleTelnetSession(session As TelnetSessionAdapter) As Task
             ' Basic loop handling for Telnet
-            ' In real implementation, this would be a state machine
             Try
-                ' ... loop ...
+                Dim stream = session.GetStream()
+                Dim reader = New StreamReader(stream, System.Text.Encoding.ASCII)
+                
+                While session.IsConnected()
+                    Dim line = Await reader.ReadLineAsync()
+                    If line Is Nothing Then Exit While
+                    
+                    ' Pass input to current screen
+                    session.HandleInput(line)
+                End While
             Catch ex As Exception
                 Console.WriteLine($"Telnet session error: {ex.Message}")
             Finally
                 session.Disconnect()
                 SessionManager.UnregisterSession(session.SessionId)
+                Logger.Log($"Telnet session {session.SessionId} closed.")
             End Try
-        End Sub
+        End Function
 
     End Class
 End Namespace

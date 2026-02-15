@@ -15,7 +15,7 @@ Imports System.Reflection
 <Assembly: System.Reflection.AssemblyCompanyAttribute("wwiv3270"),  _
  Assembly: System.Reflection.AssemblyConfigurationAttribute("Debug"),  _
  Assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0"),  _
- Assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e8acd3b8afc8836efc7cf8cfea32588345895c24"),  _
+ Assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+81549561f559ea95b9f1de90d949c64087a76fce"),  _
  Assembly: System.Reflection.AssemblyProductAttribute("wwiv3270"),  _
  Assembly: System.Reflection.AssemblyTitleAttribute("wwiv3270"),  _
  Assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")> 

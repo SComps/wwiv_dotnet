@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SubBoards>
+  <SubBoard>
+    <Number>1</Number>
+    <Name>General Chat</Name>
+    <Filename>general</Filename>
+    <Key> </Key>
+    <ReadSecurityLevel>0</ReadSecurityLevel>
+    <PostSecurityLevel>10</PostSecurityLevel>
+    <MaxMessages>1000</MaxMessages>
+    <AllowAnonymous>false</AllowAnonymous>
+    <MinimumAge>0</MinimumAge>
+  </SubBoard>
+</SubBoards>

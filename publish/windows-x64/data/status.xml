@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Status>
+  <DateUpdated>2026-02-15T00:00:00-05:00</DateUpdated>
+  <CallsToday>5</CallsToday>
+  <TotalCalls>5</TotalCalls>
+  <PostsToday>0</PostsToday>
+  <TotalPosts>0</TotalPosts>
+  <EmailToday>0</EmailToday>
+  <TotalEmail>0</TotalEmail>
+  <FeedbackSentToday>0</FeedbackSentToday>
+  <UsersCreatedToday>0</UsersCreatedToday>
+  <TotalUsers>0</TotalUsers>
+  <ActiveUsers>0</ActiveUsers>
+  <LocalStoreVersion>1</LocalStoreVersion>
+</Status>

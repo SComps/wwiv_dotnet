@@ -1,0 +1,2 @@
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\publish\windows-x64\wwiv3270.exe
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\publish\windows-x64\TN3270Framework.pdb

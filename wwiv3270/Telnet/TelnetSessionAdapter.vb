@@ -87,5 +87,19 @@ Namespace WWIV.Telnet
             Catch
             End Try
         End Sub
+
+        Public Function GetStream() As NetworkStream
+            Return _stream
+        End Function
+
+        Public Function IsConnected() As Boolean
+            Return _client IsNot Nothing AndAlso _client.Connected
+        End Function
+
+        Public Sub HandleInput(input As String)
+            If _currentScreen IsNot Nothing Then
+                _currentScreen.HandleInput(Me, input)
+            End If
+        End Sub
     End Class
 End Namespace
