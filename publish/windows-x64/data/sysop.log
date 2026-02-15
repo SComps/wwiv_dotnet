@@ -37,3 +37,16 @@
 02/15/26 12:04:54 - TN3270 Listener started on port 2323
 02/15/26 12:04:54 - Telnet Listener started on port 23
 02/15/26 12:04:54 - System is Running. Press Ctrl+C to stop.
+02/15/26 12:08:28 - Initializing WWIV 3270 System...
+02/15/26 12:08:28 - System Name: HOLY COW A BBS!
+02/15/26 12:08:28 - TN3270 Listener started on port 2323
+02/15/26 12:08:28 - Telnet Listener started on port 23
+02/15/26 12:08:28 - System is Running. Press Ctrl+C to stop.
+02/15/26 12:09:19 - Initializing WWIV 3270 System...
+02/15/26 12:09:19 - System Name: HOLY COW A BBS!
+02/15/26 12:09:19 - TN3270 Listener started on port 2323
+02/15/26 12:09:19 - Telnet Listener started on port 23
+02/15/26 12:09:19 - System is Running. Press Ctrl+C to stop.
+02/15/26 12:09:27 - New TN3270 connection from 127.0.0.1:61513
+02/15/26 12:09:27 - Negotiation Complete for 127.0.0.1:61513. Show Login Screen.
+02/15/26 12:09:58 - Session 6a8de402-3063-403f-bd3b-a5d8c209a826 disconnected.

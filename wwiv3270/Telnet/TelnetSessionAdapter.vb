@@ -51,11 +51,11 @@ Namespace WWIV.Telnet
         Private Sub SendNegotiation()
             Try
                 ' Request client to suppress go-ahead and handle echo locally
+                ' IAC WILL ECHO means "I (the server) will echo your input"
+                ' IAC WILL SGA means "I (the server) will suppress go-ahead"
                 Dim bytes() As Byte = {
                     IAC, WILL, OPT_SGA,
-                    IAC, WILL, OPT_ECHO,
-                    IAC, DONT, OPT_TERM_TYPE,
-                    IAC, DONT, OPT_NAWS
+                    IAC, WILL, OPT_ECHO
                 }
                 _stream.Write(bytes, 0, bytes.Length)
             Catch
@@ -98,7 +98,9 @@ Namespace WWIV.Telnet
         Public Sub Write(text As String) Implements ISession.Write
             If String.IsNullOrEmpty(text) Then Return
             Try
-                Dim bytes = Encoding.UTF8.GetBytes(text)
+                ' Ensure consistent line endings for telnet clients
+                Dim outText = text.Replace(vbCrLf, vbLf).Replace(vbCr, vbLf).Replace(vbLf, vbCrLf)
+                Dim bytes = Encoding.UTF8.GetBytes(outText)
                 _stream.Write(bytes, 0, bytes.Length)
             Catch ex As Exception
                 Console.WriteLine($"Error writing to session {_sessionId}: {ex.Message}")
@@ -131,7 +133,7 @@ Namespace WWIV.Telnet
 
         ''' <summary>
         ''' Main input loop for Telnet. 
-        ''' Reads bytes and handles Telnet IAC sequences.
+        ''' Reads bytes and handles Telnet IAC sequences and manual echoing.
         ''' </summary>
         Public Async Function RunSessionLoop() As Task
             Dim buffer(4096) As Byte
@@ -168,25 +170,35 @@ Namespace WWIV.Telnet
                                         i += 2 ' 2-byte command
                                 End Select
                             Else
-                                ' IAC at end of buffer? Just skip it for now.
+                                i += 1 ' IAC at end of buffer
+                            End If
+                        ElseIf b = 13 OrElse b = 10 Then ' CR or LF
+                            ' Handle CRLF correctly: if we get CR, treat as Enter and skip following LF if it exists
+                            Dim line = Encoding.UTF8.GetString(lineBuffer.ToArray()).Trim()
+                            WriteLine("") ' Echo new line
+                            HandleInput(line)
+                            lineBuffer.Clear()
+                            
+                            ' Skip the LF if this was a CR followed by LF
+                            If b = 13 AndAlso i + 1 < count AndAlso buffer(i + 1) = 10 Then
+                                i += 2
+                            Else
                                 i += 1
                             End If
-                        ElseIf b = 10 Then ' LF
-                            ' End of line
+                        ElseIf b = 8 OrElse b = 127 Then ' Backspace (BS or DEL)
                             If lineBuffer.Count > 0 Then
-                                Dim line = Encoding.UTF8.GetString(lineBuffer.ToArray()).Trim()
-                                HandleInput(line)
-                                lineBuffer.Clear()
+                                lineBuffer.RemoveAt(lineBuffer.Count - 1)
+                                ' Send Backspace, Space, Backspace to client to erase character visually
+                                Dim bsCmd() As Byte = {8, 32, 8}
+                                _stream.Write(bsCmd, 0, bsCmd.Length)
                             End If
-                            i += 1
-                        ElseIf b = 13 Then ' CR
-                            ' Ignore CR, wait for LF
                             i += 1
                         Else
                             ' Printable ASCII or UTF-8 byte
-                            ' Filter out common non-printable low ASCII control codes
-                            If b >= 32 OrElse b = 9 Then
+                            If b >= 32 OrElse b = 9 OrElse b > 127 Then
                                 lineBuffer.Add(b)
+                                ' Echo back to client
+                                _stream.Write(buffer, i, 1)
                             End If
                             i += 1
                         End If
