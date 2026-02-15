@@ -27,6 +27,8 @@ Namespace WWIV.Screens
         
         Private Sub RenderTN3270(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
+            tn.ClearFields()
+            
             Dim status = _configService.Status
             
             ' Title Bar
@@ -65,7 +67,7 @@ Namespace WWIV.Screens
             tn.WriteText(20, 10, "Press PF3 or ENTER to Return", TN3270Color.Turquoise)
             
             ' Command field (invisible or small for consistency)
-            tn.AddField(22, 1, 1, "", False, TN3270Color.Neutral, TN3270Color.Neutral, TN3270Highlight.None, "dummy")
+            tn.AddField(22, 1, 1, " ", False, TN3270Color.Neutral, TN3270Color.Neutral, TN3270Highlight.None, "dummy")
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)

@@ -40,6 +40,7 @@ Namespace WWIV.Screens
         
         Private Sub RenderTN3270(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
+            tn.ClearFields() ' Always clear before re-drawing
             
             ' Title Bar
             tn.AddField(1, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
@@ -56,8 +57,8 @@ Namespace WWIV.Screens
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
-            Dim statusText = "ENTER=Cmd  S=Send Email  D=Delete  Q=Main Menu"
-            If _viewMode = EmailViewMode.Read Then statusText = "ENTER=Next  B=Back  D=Delete  R=Reply"
+            Dim statusText = "ENTER=Cmd  S=Send Email  D=Delete  PF3=Menu"
+            If _viewMode = EmailViewMode.Read Then statusText = "ENTER=Next  B=Back  D=Delete  R=Reply  PF3=List"
             If _viewMode = EmailViewMode.Compose Then statusText = "ENTER=Send  PF3=Cancel"
             
             tn.WriteText(24, 2, statusText, TN3270Color.Yellow, TN3270Color.Blue)
@@ -67,16 +68,16 @@ Namespace WWIV.Screens
         
         Private Sub RenderList(tn As TN3270Session)
             tn.WriteText(3, 2, " #   From                  Date       Subject", TN3270Color.Turquoise)
-            tn.WriteText(4, 2, "──────────────────────────────────────────────────────────────────────────")
+            tn.WriteText(4, 2, New String("-"c, 76))
             
             Dim row = 5
             For i = 0 To Math.Min(_emails.Count - 1, 15)
                 Dim msg = _emails(i)
                 Dim status = If(msg.IsRead, " ", "*")
                 Dim msgNum = (i + 1).ToString().PadLeft(3)
-                Dim from = msg.FromName.Trim().PadRight(20).Substring(0, 20)
+                Dim from = If(msg.FromName?.Trim(), "Unknown").PadRight(20).Substring(0, 20)
                 Dim mdate = msg.DatePosted.ToString("MM/dd/yy")
-                Dim title = msg.Title.Trim().PadRight(35).Substring(0, 35)
+                Dim title = If(msg.Title?.Trim(), "(No Subject)").PadRight(35).Substring(0, 35)
                 
                 tn.WriteText(row, 2, $"{status}{msgNum}  {from}  {mdate}  {title}")
                 row += 1
@@ -87,7 +88,7 @@ Namespace WWIV.Screens
             End If
             
             tn.WriteText(22, 2, "Command:")
-            tn.AddField(22, 11, 20, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
+            tn.AddField(22, 11, 20, " ".PadRight(20), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
         End Sub
         
         Private Sub RenderMessage(tn As TN3270Session)
@@ -103,33 +104,33 @@ Namespace WWIV.Screens
             tn.WriteText(3, 2, $"Private Message from {msg.FromName}", TN3270Color.Turquoise)
             tn.WriteText(4, 2, $"Sent on : {msg.DatePosted.ToString()}", TN3270Color.Turquoise)
             tn.WriteText(5, 2, $"Subject : {msg.Title}", TN3270Color.Turquoise)
-            tn.WriteText(6, 2, "──────────────────────────────────────────────────────────────────────────")
+            tn.WriteText(6, 2, New String("-"c, 76))
             
-            Dim bodyLines = msg.Text.Split(New String() {Environment.NewLine}, StringSplitOptions.None)
+            Dim bodyLines = (msg.Text & "").Split(New String() {Environment.NewLine, vbLf, vbCr}, StringSplitOptions.None)
             Dim row = 8
             For Each line In bodyLines
                 If row > 21 Then Exit For
-                tn.WriteText(row, 2, line)
+                tn.WriteText(row, 2, If(line.Length > 76, line.Substring(0, 76), line))
                 row += 1
             Next
             
             tn.WriteText(22, 2, "Command:")
-            tn.AddField(22, 11, 20, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
+            tn.AddField(22, 11, 20, " ".PadRight(20), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
         End Sub
         
         Private Sub RenderCompose(tn As TN3270Session)
-            tn.WriteText(4, 10, "TO (User # or Name) :")
-            tn.AddField(4, 32, 20, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "to_user")
+            tn.WriteText(4, 10, "TO (User # or Name) :", TN3270Color.Turquoise)
+            tn.AddField(4, 32, 20, " ".PadRight(20), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "to_user")
             
-            tn.WriteText(6, 10, "Subject            :")
-            tn.AddField(6, 32, 40, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "subject")
+            tn.WriteText(6, 10, "Subject            :", TN3270Color.Turquoise)
+            tn.AddField(6, 32, 40, " ".PadRight(40), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "subject")
             
-            tn.WriteText(8, 10, "Message Text:")
-            tn.AddField(9, 10, 60, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line1")
-            tn.AddField(10, 10, 60, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line2")
-            tn.AddField(11, 10, 60, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line3")
-            tn.AddField(12, 10, 60, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line4")
-            tn.AddField(13, 10, 60, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line5")
+            tn.WriteText(8, 10, "Message Text:", TN3270Color.Turquoise)
+            tn.AddField(9, 10, 60, " ".PadRight(60), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line1")
+            tn.AddField(10, 10, 60, " ".PadRight(60), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line2")
+            tn.AddField(11, 10, 60, " ".PadRight(60), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line3")
+            tn.AddField(12, 10, 60, " ".PadRight(60), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line4")
+            tn.AddField(13, 10, 60, " ".PadRight(60), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line5")
         End Sub
         
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
@@ -174,28 +175,46 @@ Namespace WWIV.Screens
                             _viewMode = EmailViewMode.List
                         Case "R"
                             ' Reply (Set up compose)
-                            Dim replyTo = _emails(_currentEmailIdx).FromName
                             _viewMode = EmailViewMode.Compose
-                            ' We'd need to pre-fill fields here but tn.GetFieldValue doesn't let us SET easily without re-render
+                        Case Else
+                            ' Default ENTER in Read mode: Next email
+                            If _currentEmailIdx < _emails.Count - 1 Then
+                                _currentEmailIdx += 1
+                            Else
+                                _viewMode = EmailViewMode.List
+                            End If
                     End Select
                 End If
                 
                 RenderTN3270(session)
             ElseIf e.AidKey = &HC3 Then ' PF3
-                If _viewMode = EmailViewMode.Compose Then
+                If _viewMode = EmailViewMode.Compose OrElse _viewMode = EmailViewMode.Read Then
                     _viewMode = EmailViewMode.List
                     RenderTN3270(session)
                 Else
                     session.NavigateTo(New MainMenuScreen())
                 End If
+            Else
+                ' On any other key, just re-render to keep terminal active
+                RenderTN3270(session)
             End If
         End Sub
         
         Private Sub SendCurrent(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
-            Dim toUser = tn.GetFieldValue("to_user")
-            Dim subject = tn.GetFieldValue("subject")
-            Dim body = tn.GetFieldValue("line1") & vbCrLf & tn.GetFieldValue("line2") & vbCrLf & tn.GetFieldValue("line3")
+            Dim toUser = tn.GetFieldValue("to_user")?.Trim()
+            Dim subject = tn.GetFieldValue("subject")?.Trim()
+            Dim body = (tn.GetFieldValue("line1") & vbCrLf & 
+                        tn.GetFieldValue("line2") & vbCrLf & 
+                        tn.GetFieldValue("line3") & vbCrLf & 
+                        tn.GetFieldValue("line4") & vbCrLf & 
+                        tn.GetFieldValue("line5")).Trim()
+            
+            If String.IsNullOrEmpty(toUser) Then
+                tn.WriteText(22, 10, "Recipient is required!", TN3270Color.Red)
+                tn.ShowScreen(False)
+                Return
+            End If
             
             Dim targetUserNum = _userService.FindUser(toUser)
             If targetUserNum > 0 Then
@@ -205,17 +224,18 @@ Namespace WWIV.Screens
                     .ToName = targetUser.Name,
                     .FromName = session.User.Name,
                     .FromUserNumber = session.User.UserNumber,
-                    .Title = subject,
+                    .Title = If(String.IsNullOrEmpty(subject), "(No Subject)", subject),
                     .Text = body,
                     .DatePosted = DateTime.Now
                 }
                 _emailService.SendEmail(msg)
+                
                 _viewMode = EmailViewMode.List
                 _emails = _emailService.GetEmails(session.User.UserNumber) ' Refresh
                 RenderTN3270(session)
             Else
                 ' User not found
-                tn.WriteText(22, 10, "User not found!", TN3270Color.Red)
+                tn.WriteText(22, 10, $"User '{toUser}' not found!", TN3270Color.Red)
                 tn.ShowScreen(False)
             End If
         End Sub

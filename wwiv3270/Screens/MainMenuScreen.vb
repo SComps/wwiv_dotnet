@@ -17,16 +17,18 @@ Namespace WWIV.Screens
 
         Private Sub RenderTN3270(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
+            tn.ClearFields() ' Always clear before re-drawing
+            
             Dim userName = If(String.IsNullOrEmpty(session.User.Name), "Guest", session.User.Name.Trim())
             
             ' Title Bar
             tn.AddField(1, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
             tn.WriteText(1, 25, $"WWIV Main Menu - {userName}", TN3270Color.Yellow, TN3270Color.Blue)
             
-            ' Menu Options (mimicking original WWIV BBS.C main menu)
+            ' Menu Options
             tn.WriteText(5, 10, "WWIV Bulletin Board System", TN3270Color.Green)
             tn.WriteText(6, 10, "Main Menu", TN3270Color.Green)
-            tn.WriteText(8, 10, "──────────────────────────────────────")
+            tn.WriteText(8, 10, New String("-"c, 40))
             
             tn.WriteText(10, 10, "[E] Email")
             tn.WriteText(11, 10, "[G] Goodbye (Logoff)")
@@ -45,11 +47,11 @@ Namespace WWIV.Screens
             
             ' Input Field
             tn.WriteText(20, 10, "Command:")
-            tn.AddField(20, 20, 10, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
+            tn.AddField(20, 20, 10, " ".PadRight(10), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
-            tn.WriteText(24, 2, $"SL:{session.User.SecurityLevel}  F3=Logoff", TN3270Color.Yellow, TN3270Color.Blue)
+            tn.WriteText(24, 2, $"SL:{session.User.SecurityLevel}  PF3=Logoff  ENTER=Submit", TN3270Color.Yellow, TN3270Color.Blue)
             
             tn.ShowScreen(True)
         End Sub
@@ -123,6 +125,9 @@ Namespace WWIV.Screens
                     
                 Case &HC3 ' PF3 - Logoff
                     session.Disconnect()
+                Case Else
+                    ' Any other key, redraw to keep terminal active
+                    RenderTN3270(session)
             End Select
         End Sub
     End Class

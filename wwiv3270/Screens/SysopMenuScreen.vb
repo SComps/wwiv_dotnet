@@ -21,6 +21,7 @@ Namespace WWIV.Screens
         
         Private Sub RenderTN3270(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
+            tn.ClearFields()
             
             ' Title Bar
             tn.AddField(1, 1, 80, "".PadRight(80), True, TN3270Color.Red, TN3270Color.Neutral)
@@ -28,7 +29,7 @@ Namespace WWIV.Screens
             
             ' Menu Options
             tn.WriteText(5, 10, "System Administration", TN3270Color.Green)
-            tn.WriteText(6, 10, "═════════════════════")
+            tn.WriteText(6, 10, New String("="c, 21))
             
             tn.WriteText(8, 10, "[U] User Editor")
             tn.WriteText(9, 10, "[S] System Configuration")
@@ -40,11 +41,11 @@ Namespace WWIV.Screens
             
             ' Input Field
             tn.WriteText(16, 10, "Command:")
-            tn.AddField(16, 20, 10, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
+            tn.AddField(16, 20, 10, " ".PadRight(10), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
-            tn.WriteText(24, 2, $"Sysop: {session.User.Name.Trim()}  SL:{session.User.SecurityLevel}", TN3270Color.Yellow, TN3270Color.Blue)
+            tn.WriteText(24, 2, $"Sysop: {session.User.Name.Trim()}  SL:{session.User.SecurityLevel}  PF3=Menu", TN3270Color.Yellow, TN3270Color.Blue)
             
             tn.ShowScreen(True)
         End Sub
@@ -98,15 +99,8 @@ Namespace WWIV.Screens
                             ' Return to main menu
                             session.NavigateTo(New MainMenuScreen())
                             
-                        Case "S", "L", "V", "B"
-                            ' Show "Not Implemented" message
-                            tn.ClearFields()
-                            RenderTN3270(session)
-                            tn.WriteText(20, 10, $"Command '{cmd}' not yet implemented.", TN3270Color.Yellow)
-                            tn.ShowScreen(False)
-                            
                         Case Else
-                            ' Invalid command
+                            ' Invalid command or handled by session NavigateTo
                             tn.ClearFields()
                             RenderTN3270(session)
                             tn.WriteText(20, 10, "Invalid command.", TN3270Color.Red)
@@ -115,6 +109,8 @@ Namespace WWIV.Screens
                     
                 Case &HC3 ' PF3 - Return to main menu
                     session.NavigateTo(New MainMenuScreen())
+                Case Else
+                    RenderTN3270(session)
             End Select
         End Sub
     End Class

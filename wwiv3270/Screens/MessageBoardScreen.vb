@@ -45,6 +45,8 @@ Namespace WWIV.Screens
         
         Private Sub RenderTN3270(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
+            tn.ClearFields()
+            
             Dim subBoard = _subBoards(_currentSubIdx)
             
             ' Title Bar
@@ -63,9 +65,9 @@ Namespace WWIV.Screens
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
-            Dim statusText = If(_viewMode = MessageViewMode.List, "ENTER=Read  R=Read #  P=Post  J=Join  Q=Main Menu", 
-                             If(_viewMode = MessageViewMode.Read, "ENTER=Next  B=Back to List  A=Answer  Q=Quit Read",
-                             If(_viewMode = MessageViewMode.Join, "ENTER=Switch  Q=Back", "ENTER=Post Message  PF3=Cancel")))
+            Dim statusText = If(_viewMode = MessageViewMode.List, "ENTER=Read  R=Read #  P=Post  J=Join  PF3=Menu", 
+                             If(_viewMode = MessageViewMode.Read, "ENTER=Next  B=Back to List  A=Answer  PF3=Quit",
+                             If(_viewMode = MessageViewMode.Join, "ENTER=Switch  PF3=Back", "ENTER=Post Message  PF3=Cancel")))
             tn.WriteText(24, 2, statusText, TN3270Color.Yellow, TN3270Color.Blue)
             
             tn.ShowScreen(True)
@@ -73,7 +75,7 @@ Namespace WWIV.Screens
         
         Private Sub RenderList(tn As TN3270Session)
             tn.WriteText(3, 2, " #   From                  Date       Subject", TN3270Color.Turquoise)
-            tn.WriteText(4, 2, "──────────────────────────────────────────────────────────────────────────")
+            tn.WriteText(4, 2, New String("-"c, 76))
             
             Dim row = 5
             Dim startIdx = Math.Max(0, _messages.Count - 15) ' Show last 15
@@ -99,7 +101,7 @@ Namespace WWIV.Screens
             End If
             
             tn.WriteText(22, 2, "Command:")
-            tn.AddField(22, 11, 20, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
+            tn.AddField(22, 11, 20, " ".PadRight(20), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
         End Sub
         
         Private Sub RenderMessage(tn As TN3270Session)
@@ -115,24 +117,24 @@ Namespace WWIV.Screens
             tn.WriteText(4, 2, $"From    : {msg.FromName}", TN3270Color.Turquoise)
             tn.WriteText(5, 2, $"Date    : {msg.DatePosted.ToString()}", TN3270Color.Turquoise)
             tn.WriteText(6, 2, $"Subject : {msg.Title}", TN3270Color.Turquoise)
-            tn.WriteText(7, 2, "──────────────────────────────────────────────────────────────────────────")
+            tn.WriteText(7, 2, New String("-"c, 76))
             
             ' Message Body
             Dim bodyLines = If(msg.Text, "").Split(New String() {Environment.NewLine, vbLf, vbCr}, StringSplitOptions.None)
             Dim row = 8
             For Each line In bodyLines
                 If row > 21 Then Exit For
-                tn.WriteText(row, 2, line)
+                tn.WriteText(row, 2, If(line.Length > 76, line.Substring(0, 76), line))
                 row += 1
             Next
             
             tn.WriteText(22, 2, "Command (ENTER for next):")
-            tn.AddField(22, 28, 20, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
+            tn.AddField(22, 28, 20, " ".PadRight(20), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
         End Sub
         
         Private Sub RenderJoin(tn As TN3270Session)
             tn.WriteText(3, 2, "Select a Sub-Board to Join:", TN3270Color.Turquoise)
-            tn.WriteText(4, 2, "──────────────────────────────────────────────────────────────────────────")
+            tn.WriteText(4, 2, New String("-"c, 76))
             
             Dim row = 5
             For i = 0 To Math.Min(_subBoards.Count - 1, 15)
@@ -143,21 +145,21 @@ Namespace WWIV.Screens
             Next
             
             tn.WriteText(22, 2, "Enter Sub # to Join:")
-            tn.AddField(22, 24, 10, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
+            tn.AddField(22, 24, 10, " ".PadRight(10), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
         End Sub
  
         Private Sub RenderPost(tn As TN3270Session)
             tn.WriteText(4, 10, "Subject            :", TN3270Color.Turquoise)
-            tn.AddField(4, 32, 40, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "subject")
+            tn.AddField(4, 32, 40, " ".PadRight(40), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "subject")
             
             tn.WriteText(6, 10, "Message Text:", TN3270Color.Turquoise)
-            tn.AddField(7, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line1")
-            tn.AddField(8, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line2")
-            tn.AddField(9, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line3")
-            tn.AddField(10, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line4")
-            tn.AddField(11, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line5")
-            tn.AddField(12, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line6")
-            tn.AddField(13, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line7")
+            tn.AddField(7, 10, 65, " ".PadRight(65), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line1")
+            tn.AddField(8, 10, 65, " ".PadRight(65), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line2")
+            tn.AddField(9, 10, 65, " ".PadRight(65), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line3")
+            tn.AddField(10, 10, 65, " ".PadRight(65), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line4")
+            tn.AddField(11, 10, 65, " ".PadRight(65), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line5")
+            tn.AddField(12, 10, 65, " ".PadRight(65), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line6")
+            tn.AddField(13, 10, 65, " ".PadRight(65), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line7")
         End Sub
  
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
@@ -230,29 +232,29 @@ Namespace WWIV.Screens
                     End If
                 End If
                 
-                tn.ClearFields()
                 RenderTN3270(session)
             ElseIf e.AidKey = &HC3 Then ' PF3
-                tn.ClearFields()
                 If _viewMode = MessageViewMode.Post OrElse _viewMode = MessageViewMode.Join OrElse _viewMode = MessageViewMode.Read Then
                     _viewMode = MessageViewMode.List
                     RenderTN3270(session)
                 Else
                     session.NavigateTo(New MainMenuScreen())
                 End If
+            Else
+                RenderTN3270(session)
             End If
         End Sub
         
         Private Sub SavePost(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
-            Dim subject = tn.GetFieldValue("subject")
-            Dim body = tn.GetFieldValue("line1") & vbCrLf &
-                       tn.GetFieldValue("line2") & vbCrLf &
-                       tn.GetFieldValue("line3") & vbCrLf &
-                       tn.GetFieldValue("line4") & vbCrLf &
-                       tn.GetFieldValue("line5") & vbCrLf &
-                       tn.GetFieldValue("line6") & vbCrLf &
-                       tn.GetFieldValue("line7")
+            Dim subject = tn.GetFieldValue("subject")?.Trim()
+            Dim bodyText = (tn.GetFieldValue("line1") & vbCrLf &
+                        tn.GetFieldValue("line2") & vbCrLf &
+                        tn.GetFieldValue("line3") & vbCrLf &
+                        tn.GetFieldValue("line4") & vbCrLf &
+                        tn.GetFieldValue("line5") & vbCrLf &
+                        tn.GetFieldValue("line6") & vbCrLf &
+                        tn.GetFieldValue("line7")).Trim()
             
             If String.IsNullOrWhiteSpace(subject) Then
                 tn.WriteText(22, 10, "Subject is required!", TN3270Color.Red)
@@ -262,7 +264,7 @@ Namespace WWIV.Screens
             
             Dim msg As New MessageHeader With {
                 .Title = subject,
-                .Text = body.TrimEnd(),
+                .Text = bodyText,
                 .FromName = If(session.User?.Name, "Unknown"),
                 .FromUserNumber = If(session.User?.UserNumber, 0),
                 .DatePosted = DateTime.Now
@@ -273,7 +275,6 @@ Namespace WWIV.Screens
             ' Reset and return to list
             _viewMode = MessageViewMode.List
             _messages = _boardService.GetMessages(_subBoards(_currentSubIdx).Number)
-            tn.ClearFields()
             RenderTN3270(session)
         End Sub
     End Class
