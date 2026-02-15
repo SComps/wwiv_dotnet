@@ -131,13 +131,14 @@ Namespace WWIV.Screens
             Dim user = userService.ValidateCredentials(userId, password)
             
             If user Is Nothing Then
+                Console.WriteLine($"Login failed for user '{userId}'.")
                 Return False
             End If
             
             ' Update session with user data
             session.User = user
             
-            Console.WriteLine($"User #{user.UserNumber} ({user.Name.Trim()}) logged in successfully.")
+            Console.WriteLine($"User #{user.UserNumber} ({user.Name.Trim()}) logged in successfully via {If(TypeOf session Is TN3270SessionAdapter, "TN3270", "Telnet")}.")
             
             Return True
         End Function

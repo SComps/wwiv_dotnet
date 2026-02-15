@@ -22,8 +22,8 @@ Namespace WWIV.Telnet
         Public Sub New(client As TcpClient)
             _client = client
             _stream = client.GetStream()
-            _reader = New StreamReader(_stream, Encoding.ASCII)
-            _writer = New StreamWriter(_stream, Encoding.ASCII) With { .AutoFlush = True }
+            _reader = New StreamReader(_stream, New UTF8Encoding(False))
+            _writer = New StreamWriter(_stream, New UTF8Encoding(False)) With { .AutoFlush = True }
             _sessionId = Guid.NewGuid()
         End Sub
 
@@ -98,8 +98,23 @@ Namespace WWIV.Telnet
 
         Public Sub HandleInput(input As String)
             If _currentScreen IsNot Nothing Then
-                _currentScreen.HandleInput(Me, input)
+                ' Sanitize input to remove control characters/null bytes
+                Dim sanitized = SanitizeInput(input)
+                _currentScreen.HandleInput(Me, sanitized)
             End If
         End Sub
+
+        Private Function SanitizeInput(input As String) As String
+            If String.IsNullOrEmpty(input) Then Return ""
+            Dim sb As New StringBuilder()
+            For Each c In input
+                Dim code = AscW(c)
+                ' Keep printable ASCII only for input (32-126)
+                If code >= 32 AndAlso code <= 126 Then
+                    sb.Append(c)
+                End If
+            Next
+            Return sb.ToString().Trim()
+        End Function
     End Class
 End Namespace

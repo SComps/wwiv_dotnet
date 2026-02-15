@@ -176,11 +176,17 @@ Namespace WWIV.Services
         End Function
         
         Public Function ValidateCredentials(username As String, password As String) As UserRecord
+            Console.WriteLine($"Validating credentials for '{username}' (Len:{username?.Length})")
             Dim userNum = FindUser(username)
-            If userNum <= 0 Then Return Nothing
+            If userNum <= 0 Then 
+                Console.WriteLine($"User '{username}' not found.")
+                Return Nothing
+            End If
             
             Dim user = GetUser(userNum)
             If user Is Nothing Then Return Nothing
+            
+            Console.WriteLine($"Checking password for user #{userNum} ({user.Name.Trim()}). Provided Len:{password?.Length}, Stored Len:{user.Password?.Trim().Length}")
             
             If String.Equals(user.Password.Trim(), password.Trim(), StringComparison.OrdinalIgnoreCase) Then
                 ' Update last logon
@@ -189,6 +195,8 @@ Namespace WWIV.Services
                 user.LogonsToday += 1
                 SaveUser(user)
                 Return user
+            Else
+                Console.WriteLine("Password mismatch.")
             End If
             
             Return Nothing

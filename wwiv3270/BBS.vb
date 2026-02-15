@@ -83,7 +83,7 @@ Namespace WWIV
             ' Basic loop handling for Telnet
             Try
                 Dim stream = session.GetStream()
-                Dim reader = New StreamReader(stream, System.Text.Encoding.ASCII)
+                Dim reader = New StreamReader(stream, New System.Text.UTF8Encoding(False))
                 
                 While session.IsConnected()
                     Dim line = Await reader.ReadLineAsync()

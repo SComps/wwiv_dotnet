@@ -75,7 +75,7 @@ Namespace WWIV.Screens
             End If
             
             ' Status Row / Command Row
-            tn.WriteText(21, 1, "═" * 80, TN3270Color.Blue)
+            tn.WriteText(21, 1, New String("═"c, 80), TN3270Color.Blue)
             
             ' Edit Panel (if in edit mode)
             If _editMode AndAlso _selectedIndex >= 0 AndAlso _selectedIndex < _userList.Count Then
