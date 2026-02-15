@@ -140,6 +140,13 @@ Namespace WWIV.Services
             
             ' Assign user number if new
             If user.UserNumber = 0 Then
+                ' User #1 is the Master Sysop
+                If _nextUserNumber = 1 Then
+                    user.SecurityLevel = 255
+                    user.DownloadSecurityLevel = 255
+                    Console.WriteLine("Assigning Master Sysop status to User #1")
+                End If
+                
                 user.UserNumber = _nextUserNumber
                 _nextUserNumber += 1
             End If

@@ -34,8 +34,9 @@ Namespace WWIV.Screens
             tn.WriteText(9, 10, "[S] System Configuration")
             tn.WriteText(10, 10, "[L] View System Log")
             tn.WriteText(11, 10, "[V] Validation Queue")
-            tn.WriteText(12, 10, "[B] Bulletin Editor")
-            tn.WriteText(13, 10, "[Q] Return to Main Menu")
+            tn.WriteText(12, 10, "[I] System Information")
+            tn.WriteText(13, 10, "[B] Board/Sub Editor")
+            tn.WriteText(14, 10, "[Q] Return to Main Menu")
             
             ' Input Field
             tn.WriteText(16, 10, "Command:")
@@ -79,8 +80,19 @@ Namespace WWIV.Screens
                     
                     Select Case cmd
                         Case "U"
-                            ' User Editor
                             session.NavigateTo(New UserEditorScreen())
+                            
+                        Case "L"
+                            session.NavigateTo(New SystemLogScreen())
+                            
+                        Case "S"
+                            session.NavigateTo(New SystemConfigScreen())
+                            
+                        Case "I"
+                            session.NavigateTo(New SystemStatusScreen())
+                            
+                        Case "B"
+                            session.NavigateTo(New SubBoardEditorScreen())
                             
                         Case "Q"
                             ' Return to main menu

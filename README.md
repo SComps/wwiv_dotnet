@@ -9,6 +9,12 @@ This project converts the original WWIV BBS (written in C for DOS) to VB.NET run
 - **TN3270 Protocol** (Port 2323): Full-screen forms-based interface for 3270 terminal emulators
 - **Telnet/VT Protocol** (Port 23): Traditional line-based interface for standard terminal emulators
 
+## Quick Start
+1.  **Build**: `dotnet build`
+2.  **Run**: `dotnet run --project wwiv3270`
+3.  **Connect**: Use a 3270 emulator (like x3270 or wc3270) to connect to `localhost:2323`.
+4.  **Registration**: Type `NEW` at the login prompt. **The first user to register becomes the Master Sysop (User #1, SL 255).**
+
 ## Architecture
 
 ### Core Components

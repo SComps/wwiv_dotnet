@@ -84,8 +84,8 @@ By avoiding legacy `MarshalAs` and unmanaged types, the entire system is now com
 - **`EmailService`**: Local user-to-user email system.
 - **`MessageBoardScreen`**: Integrated list/read/join/post UI for sub-boards.
 - **`LocalEmailScreen`**: Full read/compose/delete functionality for private messages.
-- **Wired to Main Menu**: 'E' and 'M' keys now lead to the respective areas.
-- **Full Parity**: Public posting and private emailing are fully functional.
+- **`Sysop Utilities`**: Full-screen editors for System Config, User Editor, Sub-board Editor, and Log Viewer.
+- **Master Sysop**: User #1 automatically assigned SL 255.
 ## Next Steps
 
 ### Implementation Progress

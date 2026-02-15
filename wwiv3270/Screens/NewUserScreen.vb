@@ -16,6 +16,7 @@ Namespace WWIV.Screens
         Private _userService As UserService
         Private _state As RegistrationState = RegistrationState.Name
         Private _tempUser As UserRecord
+        Private _isFirstUser As Boolean = False
         
         Private Enum RegistrationState
             Name
@@ -34,6 +35,7 @@ Namespace WWIV.Screens
         Public Sub Activate(session As ISession) Implements IScreen.Activate
             _state = RegistrationState.Name
             _tempUser = New UserRecord()
+            _isFirstUser = (_userService.GetUserCount() = 0)
             
             If TypeOf session Is TN3270SessionAdapter Then
                 RenderTN3270(DirectCast(session, TN3270SessionAdapter))
@@ -52,6 +54,10 @@ Namespace WWIV.Screens
             ' Welcome Message
             tn.WriteText(4, 10, "Welcome to WWIV Bulletin Board System!")
             tn.WriteText(5, 10, "Please complete the following information to create your account.")
+            
+            If _isFirstUser Then
+                tn.WriteText(6, 10, "*** You are the first user! You will be the System Operator. ***", TN3270Color.Turquoise)
+            End If
             
             ' Registration Form
             Select Case _state

@@ -4,6 +4,7 @@ Imports TN3270Framework
 Imports wwiv3270.WWIV.Telnet
 Imports wwiv3270.WWIV.Manager
 Imports wwiv3270.WWIV.Adapters
+Imports wwiv3270.WWIV.Services
 
 Namespace WWIV
     Public Class BBS
@@ -12,30 +13,30 @@ Namespace WWIV
         Private _configService As Services.ConfigService
         
         Public Sub Start()
-            Console.WriteLine("Initializing WWIV 3270 System...")
+            Logger.Log("Initializing WWIV 3270 System...")
 
             ' Initialize Config
             _configService = New Services.ConfigService()
-            Console.WriteLine($"System Name: {_configService.Config.SystemName}")
+            Logger.Log($"System Name: {_configService.Config.SystemName}")
             
             ' Initialize TN3270 Listener
             _tnListener = New TN3270Listener(2323)
             AddHandler _tnListener.ConnectionReceived, AddressOf OnTNConnectionReceived
             _tnListener.Start()
-            Console.WriteLine($"TN3270 Listener started on port 2323")
+            Logger.Log($"TN3270 Listener started on port 2323")
 
             ' Initialize Telnet Listener
             _telnetListener = New TelnetListener(23)
             AddHandler _telnetListener.ConnectionReceived, AddressOf OnTelnetConnectionReceived
             _telnetListener.Start()
-            Console.WriteLine($"Telnet Listener started on port 23")
+            Logger.Log($"Telnet Listener started on port 23")
             
-            Console.WriteLine("System is Running. Press Ctrl+C to stop.")
+            Logger.Log("System is Running. Press Ctrl+C to stop.")
         End Sub
 
         Private Sub OnTNConnectionReceived(sender As Object, e As TN3270ConnectionEventArgs)
             Dim session = e.Session
-            Console.WriteLine($"New TN3270 connection from {e.RemoteEndPoint}")
+            Logger.Log($"New TN3270 connection from {e.RemoteEndPoint}")
             
             ' Wrap session
             Dim adapter As New TN3270SessionAdapter(session)
@@ -49,12 +50,12 @@ Namespace WWIV
             
             ' Wait for negotiation complete? Or handle events?
             AddHandler session.NegotiationComplete, Sub(s, args)
-                Console.WriteLine("Negotiation Complete. Show Login Screen.")
+                Logger.Log($"Negotiation Complete for {e.RemoteEndPoint}. Show Login Screen.")
                 adapter.NavigateTo(New Screens.LoginScreen())
             End Sub
             
             AddHandler session.Disconnected, Sub(s, args)
-                Console.WriteLine($"Session {adapter.SessionId} disconnected.")
+                Logger.Log($"Session {adapter.SessionId} disconnected.")
                 SessionManager.UnregisterSession(adapter.SessionId)
             End Sub
         End Sub
