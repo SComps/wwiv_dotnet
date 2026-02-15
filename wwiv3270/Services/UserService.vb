@@ -49,7 +49,9 @@ Namespace WWIV.Services
                         Dim user = UserRecord.FromXml(userEl)
                         If Not user.IsDeleted Then
                             _userCache(user.UserNumber) = user
-                            _nameIndex(user.Name.Trim()) = user.UserNumber
+                            If Not String.IsNullOrEmpty(user.Name) Then
+                                _nameIndex(user.Name.Trim()) = user.UserNumber
+                            End If
                             
                             If user.UserNumber >= _nextUserNumber Then
                                 _nextUserNumber = user.UserNumber + 1
@@ -95,18 +97,18 @@ Namespace WWIV.Services
                 Return -1
             End If
             
-            ' Try numeric lookup
+            ' 1. Check name index FIRST (case-insensitive)
+            If _nameIndex.ContainsKey(searchName) Then
+                Return _nameIndex(searchName)
+            End If
+
+            ' 2. Try numeric lookup if not found by name
             Dim userNum As Integer
             If Integer.TryParse(searchName, userNum) Then
                 If _userCache.ContainsKey(userNum) Then
                     Return userNum
                 End If
                 Return 0
-            End If
-            
-            ' Search by name
-            If _nameIndex.ContainsKey(searchName) Then
-                Return _nameIndex(searchName)
             End If
             
             Return 0
@@ -130,7 +132,9 @@ Namespace WWIV.Services
             
             ' Update cache
             _userCache(user.UserNumber) = user
-            _nameIndex(user.Name.Trim()) = user.UserNumber
+            If Not String.IsNullOrEmpty(user.Name) Then
+                _nameIndex(user.Name.Trim()) = user.UserNumber
+            End If
             
             ' Persist to disk
             SaveUsers()
@@ -178,7 +182,7 @@ Namespace WWIV.Services
             Dim user = GetUser(userNum)
             If user Is Nothing Then Return Nothing
             
-            If user.Password.Trim() = password.Trim() Then
+            If String.Equals(user.Password.Trim(), password.Trim(), StringComparison.OrdinalIgnoreCase) Then
                 ' Update last logon
                 user.LastLogon = DateTime.Now
                 user.TotalLogons += 1

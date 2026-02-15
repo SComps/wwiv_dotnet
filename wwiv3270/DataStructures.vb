@@ -136,10 +136,10 @@ Namespace WWIV.Data
             Dim u = New UserRecord()
             If el Is Nothing Then Return u
             
-            u.UserNumber = CInt(el.Element("UserNumber"))
-            u.Name = CStr(el.Element("Name"))
-            u.RealName = CStr(el.Element("RealName"))
-            u.Password = CStr(el.Element("Password"))
+            u.UserNumber = If(el.Element("UserNumber") IsNot Nothing, CInt(el.Element("UserNumber")), 0)
+            u.Name = If(el.Element("Name") IsNot Nothing, CStr(el.Element("Name")), "")
+            u.RealName = If(el.Element("RealName") IsNot Nothing, CStr(el.Element("RealName")), "")
+            u.Password = If(el.Element("Password") IsNot Nothing, CStr(el.Element("Password")), "")
             u.Phone = CStr(el.Element("Phone"))
             u.Street = CStr(el.Element("Street"))
             u.City = CStr(el.Element("City"))
