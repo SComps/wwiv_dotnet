@@ -200,4 +200,13 @@ Namespace WWIV.Data
         Public Property NumDownloads As Integer = 0
         Public Property MD5Hash As String = ""
     End Class
+    ''' <summary>
+    ''' Local email message
+    ''' </summary>
+    Public Class EmailMessage
+        Inherits MessageHeader
+        Public Property ToUserNumber As Integer = 0
+        Public Property ToName As String = ""
+        Public Property IsRead As Boolean = False
+    End Class
 End Namespace

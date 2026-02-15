@@ -79,11 +79,12 @@ End Class
 ### Ahead-of-Time (AOT) Focus
 By avoiding legacy `MarshalAs` and unmanaged types, the entire system is now compatible with `PublishAot=true`, resulting in small, self-contained, high-performance native binaries.
 
-## Next Steps
-
-### Implementation Progress
-1. **Message System Integration**: 
-   - Connect `BoardService` to new screens for reading and posting.
+### 6. Message System Integration
+- **`BoardService`**: JSON-based message board management.
+- **`EmailService`**: Local user-to-user email system.
+- **`MessageBoardScreen`**: Integrated list/read/join UI for sub-boards.
+- **`LocalEmailScreen`**: Full read/compose/delete functionality for private messages.
+- **Wired to Main Menu**: 'E' and 'M' keys now lead to the respective areas.
 2. **File Transfer Integration**:
    - Create screens for browsing file areas and initiating transfers.
 3. **Internal Mail (Email)**:

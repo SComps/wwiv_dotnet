@@ -101,7 +101,13 @@ Namespace WWIV.Screens
                                 tn.ShowScreen(False)
                             End If
                             
-                        Case "E", "M", "P", "U", "X", "Y", "?"
+                        Case "E"
+                            session.NavigateTo(New LocalEmailScreen())
+                            
+                        Case "M", "P"
+                            session.NavigateTo(New MessageBoardScreen())
+                            
+                        Case "U", "X", "Y", "?"
                             ' Show "Not Implemented" message
                             tn.ClearFields()
                             RenderTN3270(session)
