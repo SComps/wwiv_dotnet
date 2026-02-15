@@ -80,18 +80,9 @@ Namespace WWIV
         End Sub
 
         Private Async Function HandleTelnetSession(session As TelnetSessionAdapter) As Task
-            ' Basic loop handling for Telnet
+            ' Use the refined session loop that handles Telnet negotiation
             Try
-                Dim stream = session.GetStream()
-                Dim reader = New StreamReader(stream, New System.Text.UTF8Encoding(False))
-                
-                While session.IsConnected()
-                    Dim line = Await reader.ReadLineAsync()
-                    If line Is Nothing Then Exit While
-                    
-                    ' Pass input to current screen
-                    session.HandleInput(line)
-                End While
+                Await session.RunSessionLoop()
             Catch ex As Exception
                 Console.WriteLine($"Telnet session error: {ex.Message}")
             Finally
