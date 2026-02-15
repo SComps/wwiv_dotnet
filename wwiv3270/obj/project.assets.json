@@ -8,7 +8,7 @@
           "build/Microsoft.DotNet.ILCompiler.props": {}
         }
       },
-      "Microsoft.NET.ILLink.Tasks/9.0.12": {
+      "Microsoft.NET.ILLink.Tasks/9.0.13": {
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
@@ -60,7 +60,7 @@
           "build/Microsoft.DotNet.ILCompiler.props": {}
         }
       },
-      "Microsoft.NET.ILLink.Tasks/9.0.12": {
+      "Microsoft.NET.ILLink.Tasks/9.0.13": {
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
@@ -130,10 +130,10 @@
         "tools/netstandard/ILCompiler.Build.Tasks.dll"
       ]
     },
-    "Microsoft.NET.ILLink.Tasks/9.0.12": {
-      "sha512": "StA3kyImQHqDo8A8ZHaSxgASbEuT5UIqgeCvK5SzUPj//xE1QSys421J9pEs4cYuIVwq7CJvWSKxtyH7aPr1LA==",
+    "Microsoft.NET.ILLink.Tasks/9.0.13": {
+      "sha512": "f7t15I9ZXV7fNk3FIzPAlkJNG1A1tkSeDpRh+TFWEToGGqA+uj6uqU15I8YOkkYICNY2tqOVm2CMe6ScPFPwEg==",
       "type": "package",
-      "path": "microsoft.net.illink.tasks/9.0.12",
+      "path": "microsoft.net.illink.tasks/9.0.13",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
@@ -147,7 +147,7 @@
         "build/Microsoft.NET.ILLink.Analyzers.props",
         "build/Microsoft.NET.ILLink.Tasks.props",
         "build/Microsoft.NET.ILLink.targets",
-        "microsoft.net.illink.tasks.9.0.12.nupkg.sha512",
+        "microsoft.net.illink.tasks.9.0.13.nupkg.sha512",
         "microsoft.net.illink.tasks.nuspec",
         "tools/net472/ILLink.Tasks.dll",
         "tools/net472/ILLink.Tasks.dll.config",
@@ -661,7 +661,7 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "Microsoft.DotNet.ILCompiler >= 9.0.12",
-      "Microsoft.NET.ILLink.Tasks >= 9.0.12",
+      "Microsoft.NET.ILLink.Tasks >= 9.0.13",
       "TN3270Framework >= 1.0.0"
     ]
   },
@@ -729,7 +729,7 @@
           "Microsoft.NET.ILLink.Tasks": {
             "suppressParent": "All",
             "target": "Package",
-            "version": "[9.0.12, )",
+            "version": "[9.0.13, )",
             "autoReferenced": true
           }
         },
@@ -747,15 +747,15 @@
         "downloadDependencies": [
           {
             "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-            "version": "[9.0.12, 9.0.12]"
+            "version": "[9.0.13, 9.0.13]"
           },
           {
             "name": "Microsoft.NETCore.App.Runtime.win-x64",
-            "version": "[9.0.12, 9.0.12]"
+            "version": "[9.0.13, 9.0.13]"
           },
           {
             "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-            "version": "[9.0.12, 9.0.12]"
+            "version": "[9.0.13, 9.0.13]"
           },
           {
             "name": "runtime.win-x64.Microsoft.DotNet.ILCompiler",
@@ -767,7 +767,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.310/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.311/PortableRuntimeIdentifierGraph.json"
       }
     },
     "runtimes": {

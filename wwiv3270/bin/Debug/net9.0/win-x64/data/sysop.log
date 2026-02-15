@@ -1,0 +1,7 @@
+02/15/26 11:12:32 - System Name: WWIV BBS
+02/15/26 11:12:33 - TN3270 Listener started on port 2323
+02/15/26 11:12:33 - Telnet Listener started on port 23
+02/15/26 11:12:33 - System is Running. Press Ctrl+C to stop.
+02/15/26 11:13:09 - New TN3270 connection from 127.0.0.1:62430
+02/15/26 11:13:09 - Negotiation Complete for 127.0.0.1:62430. Show Login Screen.
+02/15/26 11:16:34 - Session 3e48c4ca-cce0-4ca3-8c08-98ad8085cb17 disconnected.

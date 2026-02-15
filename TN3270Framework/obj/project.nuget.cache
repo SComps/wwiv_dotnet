@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "XFpJu4h+BlI=",
+  "dgSpecHash": "2HvWv3k/LFs=",
   "success": true,
   "projectFilePath": "C:\\Users\\Scott\\.gemini\\antigravity\\scratch\\wwiv3270\\TN3270Framework\\TN3270Framework.vbproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Scott\\.nuget\\packages\\microsoft.net.illink.tasks\\9.0.12\\microsoft.net.illink.tasks.9.0.12.nupkg.sha512",
+    "C:\\Users\\Scott\\.nuget\\packages\\microsoft.net.illink.tasks\\9.0.13\\microsoft.net.illink.tasks.9.0.13.nupkg.sha512",
     "C:\\Users\\Scott\\.nuget\\packages\\system.text.encoding.codepages\\9.0.1\\system.text.encoding.codepages.9.0.1.nupkg.sha512"
   ],
   "logs": []

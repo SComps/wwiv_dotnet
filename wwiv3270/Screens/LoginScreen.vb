@@ -75,6 +75,12 @@ Namespace WWIV.Screens
                     
                     Console.WriteLine($"Login attempt: User={userId}, Pass={If(String.IsNullOrEmpty(password), "(empty)", "***")}")
                     
+                    ' Check for NEW user registration
+                    If userId?.Trim().ToUpper() = "NEW" Then
+                        session.NavigateTo(New NewUserScreen())
+                        Return
+                    End If
+
                     If ValidateLogin(userId, password, session) Then
                         ' Navigate to Main Menu
                         Console.WriteLine("Login successful!")
@@ -96,12 +102,7 @@ Namespace WWIV.Screens
         End Sub
 
         Private Function ValidateLogin(userId As String, password As String, session As ISession) As Boolean
-            ' Check for new user
-            If userId.Trim().ToUpper() = "NEW" Then
-                ' Navigate to new user screen
-                session.NavigateTo(New NewUserScreen())
-                Return False ' Don't proceed to main menu
-            End If
+            ' NEW user registration is now handled in HandleTN3270Input
             
             ' Use UserService to find and validate user
             Dim userService As New Services.UserService()

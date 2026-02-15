@@ -15,7 +15,8 @@ Namespace WWIV.Services
         
         Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
             .WriteIndented = True,
-            .PropertyNameCaseInsensitive = True
+            .PropertyNameCaseInsensitive = True,
+            .TypeInfoResolver = WWIVJsonContext.Default
         }
 
         Private _subList As List(Of SubBoard)

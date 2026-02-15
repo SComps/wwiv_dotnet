@@ -14,7 +14,8 @@ Namespace WWIV.Services
         
         Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
             .WriteIndented = True,
-            .PropertyNameCaseInsensitive = True
+            .PropertyNameCaseInsensitive = True,
+            .TypeInfoResolver = WWIVJsonContext.Default
         }
 
         Private ReadOnly _emailCache As New ConcurrentDictionary(Of Integer, List(Of EmailMessage))()

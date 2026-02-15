@@ -15,7 +15,8 @@ Namespace WWIV.Services
         Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
             .WriteIndented = True,
             .PropertyNameCaseInsensitive = True,
-            .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            .TypeInfoResolver = WWIVJsonContext.Default
         }
 
         Private _config As SystemConfig

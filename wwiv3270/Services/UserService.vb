@@ -28,7 +28,8 @@ Namespace WWIV.Services
             _jsonOptions = New JsonSerializerOptions With {
                 .WriteIndented = True,
                 .PropertyNameCaseInsensitive = True,
-                .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                .TypeInfoResolver = WWIVJsonContext.Default
             }
             
             ' Ensure data directory exists
