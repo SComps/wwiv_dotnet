@@ -82,14 +82,16 @@ By avoiding legacy `MarshalAs` and unmanaged types, the entire system is now com
 ### 6. Message System Integration
 - **`BoardService`**: JSON-based message board management.
 - **`EmailService`**: Local user-to-user email system.
-- **`MessageBoardScreen`**: Integrated list/read/join UI for sub-boards.
+- **`MessageBoardScreen`**: Integrated list/read/join/post UI for sub-boards.
 - **`LocalEmailScreen`**: Full read/compose/delete functionality for private messages.
 - **Wired to Main Menu**: 'E' and 'M' keys now lead to the respective areas.
-2. **File Transfer Integration**:
+- **Full Parity**: Public posting and private emailing are fully functional.
+## Next Steps
+
+### Implementation Progress
+1. **File Transfer Integration**:
    - Create screens for browsing file areas and initiating transfers.
-3. **Internal Mail (Email)**:
-   - Implement user-to-user private messaging.
-4. **Door/Chain Support**:
+2. **Door/Chain Support**:
    - Modern "WebHook" or local process execution for external games.
 
 ## Current Completion Status

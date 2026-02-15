@@ -24,6 +24,7 @@ Namespace WWIV.Screens
             List
             Read
             Join
+            Post
         End Enum
         
         Public Sub New(Optional subIdx As Integer = 0)
@@ -54,13 +55,17 @@ Namespace WWIV.Screens
                 RenderList(tn)
             ElseIf _viewMode = MessageViewMode.Read Then
                 RenderMessage(tn)
-            Else
+            ElseIf _viewMode = MessageViewMode.Join Then
                 RenderJoin(tn)
+            Else
+                RenderPost(tn)
             End If
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
-            Dim statusText = If(_viewMode = MessageViewMode.List, "ENTER=Read  R=Read #  P=Post  J=Join  Q=Main Menu", "ENTER=Next  B=Back to List  A=Answer  Q=Quit Read")
+            Dim statusText = If(_viewMode = MessageViewMode.List, "ENTER=Read  R=Read #  P=Post  J=Join  Q=Main Menu", 
+                             If(_viewMode = MessageViewMode.Read, "ENTER=Next  B=Back to List  A=Answer  Q=Quit Read",
+                             If(_viewMode = MessageViewMode.Join, "ENTER=Switch  Q=Back", "ENTER=Post Message  PF3=Cancel")))
             tn.WriteText(24, 2, statusText, TN3270Color.Yellow, TN3270Color.Blue)
             
             tn.ShowScreen(True)
@@ -132,6 +137,20 @@ Namespace WWIV.Screens
             tn.AddField(22, 24, 10, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
         End Sub
 
+        Private Sub RenderPost(tn As TN3270Session)
+            tn.WriteText(4, 10, "Subject            :", TN3270Color.Turquoise)
+            tn.AddField(4, 32, 40, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "subject")
+            
+            tn.WriteText(6, 10, "Message Text:", TN3270Color.Turquoise)
+            tn.AddField(7, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line1")
+            tn.AddField(8, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line2")
+            tn.AddField(9, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line3")
+            tn.AddField(10, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line4")
+            tn.AddField(11, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line5")
+            tn.AddField(12, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line6")
+            tn.AddField(13, 10, 65, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "line7")
+        End Sub
+
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
             If TypeOf session Is TN3270SessionAdapter Then
                 HandleTN3270Input(DirectCast(session, TN3270SessionAdapter), DirectCast(input, AidKeyEventArgs))
@@ -158,7 +177,7 @@ Namespace WWIV.Screens
                             Case "J"
                                 _viewMode = MessageViewMode.Join
                             Case "P"
-                                ' Post (Not implemented)
+                                _viewMode = MessageViewMode.Post
                         End Select
                     End If
                 ElseIf _viewMode = MessageViewMode.Join Then
@@ -172,6 +191,9 @@ Namespace WWIV.Screens
                     ElseIf cmd = "Q" Then
                         _viewMode = MessageViewMode.List
                     End If
+                ElseIf _viewMode = MessageViewMode.Post Then
+                    SavePost(session)
+                    Return
                 Else
                     ' Read Mode
                     If String.IsNullOrEmpty(cmd) Then
@@ -191,8 +213,46 @@ Namespace WWIV.Screens
                 
                 RenderTN3270(session)
             ElseIf e.AidKey = &HC3 Then ' PF3
-                session.NavigateTo(New MainMenuScreen())
+                If _viewMode = MessageViewMode.Post OrElse _viewMode = MessageViewMode.Join Then
+                    _viewMode = MessageViewMode.List
+                    RenderTN3270(session)
+                Else
+                    session.NavigateTo(New MainMenuScreen())
+                End If
             End If
+        End Sub
+        
+        Private Sub SavePost(session As TN3270SessionAdapter)
+            Dim tn = session.TN3270Session
+            Dim subject = tn.GetFieldValue("subject")
+            Dim body = tn.GetFieldValue("line1") & vbCrLf &
+                       tn.GetFieldValue("line2") & vbCrLf &
+                       tn.GetFieldValue("line3") & vbCrLf &
+                       tn.GetFieldValue("line4") & vbCrLf &
+                       tn.GetFieldValue("line5") & vbCrLf &
+                       tn.GetFieldValue("line6") & vbCrLf &
+                       tn.GetFieldValue("line7")
+            
+            If String.IsNullOrWhiteSpace(subject) Then
+                tn.WriteText(22, 10, "Subject is required!", TN3270Color.Red)
+                tn.ShowScreen(False)
+                Return
+            End If
+            
+            Dim msg As New MessageHeader With {
+                .Title = subject,
+                .Text = body.TrimEnd(),
+                .FromName = session.User.Name,
+                .FromUserNumber = session.User.UserNumber,
+                .DatePosted = DateTime.Now
+            }
+            
+            _boardService.AddMessage(_subBoards(_currentSubIdx).Number, msg)
+            
+            ' Reset and return to list
+            _viewMode = MessageViewMode.List
+            _messages = _boardService.GetMessages(_subBoards(_currentSubIdx).Number)
+            RenderTN3270(session)
         End Sub
     End Class
 End Namespace
