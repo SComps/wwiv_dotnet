@@ -9,3 +9,15 @@ C:\Users\Scott\.gemini\antigravity\scratch\TN3270Framework\obj\Release\net9.0\TN
 C:\Users\Scott\.gemini\antigravity\scratch\TN3270Framework\obj\Release\net9.0\refint\TN3270Framework.dll
 C:\Users\Scott\.gemini\antigravity\scratch\TN3270Framework\obj\Release\net9.0\TN3270Framework.pdb
 C:\Users\Scott\.gemini\antigravity\scratch\TN3270Framework\obj\Release\net9.0\ref\TN3270Framework.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\bin\Release\net9.0\TN3270Framework.deps.json
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\bin\Release\net9.0\TN3270Framework.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\bin\Release\net9.0\TN3270Framework.pdb
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\TN3270Framework.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\TN3270Framework.AssemblyInfoInputs.cache
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\TN3270Framework.AssemblyInfo.vb
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\TN3270Framework.vbproj.CoreCompileInputs.cache
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\TN3270Framework.sourcelink.json
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\TN3270Framework.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\refint\TN3270Framework.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\TN3270Framework.pdb
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Release\net9.0\ref\TN3270Framework.dll

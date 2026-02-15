@@ -1,23 +1,16 @@
 Imports System
 Imports System.IO
-Imports System.Text.Json
-Imports System.Text.Json.Serialization
+Imports System.Xml.Linq
 Imports wwiv3270.WWIV.Data
 
 Namespace WWIV.Services
     ''' <summary>
-    ''' Service for managing system configuration and status
+    ''' Service for managing system configuration and status using XML
     ''' </summary>
     Public Class ConfigService
         Private ReadOnly _dataDir As String
         Private ReadOnly _configFile As String
         Private ReadOnly _statusFile As String
-        Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
-            .WriteIndented = True,
-            .PropertyNameCaseInsensitive = True,
-            .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            .TypeInfoResolver = WWIVJsonContext.Default
-        }
 
         Private _config As SystemConfig
         Private _status As SystemStatus
@@ -27,8 +20,8 @@ Namespace WWIV.Services
             _dataDir = If(dataDir, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data"))
             If Not Directory.Exists(_dataDir) Then Directory.CreateDirectory(_dataDir)
             
-            _configFile = Path.Combine(_dataDir, "config.json")
-            _statusFile = Path.Combine(_dataDir, "status.json")
+            _configFile = Path.Combine(_dataDir, "config.xml")
+            _statusFile = Path.Combine(_dataDir, "status.xml")
             
             LoadConfig()
             LoadStatus()
@@ -66,8 +59,8 @@ Namespace WWIV.Services
             SyncLock _lock
                 If File.Exists(_configFile) Then
                     Try
-                        Dim json = File.ReadAllText(_configFile)
-                        _config = JsonSerializer.Deserialize(Of SystemConfig)(json, _jsonOptions)
+                        Dim doc = XDocument.Load(_configFile)
+                        _config = SystemConfig.FromXml(doc.Root)
                     Catch ex As Exception
                         Console.WriteLine($"Error loading config: {ex.Message}")
                         _config = New SystemConfig()
@@ -82,8 +75,8 @@ Namespace WWIV.Services
         Private Sub SaveConfig()
             SyncLock _lock
                 Try
-                    Dim json = JsonSerializer.Serialize(_config, _jsonOptions)
-                    File.WriteAllText(_configFile, json)
+                    Dim doc = New XDocument(_config.ToXml())
+                    doc.Save(_configFile)
                 Catch ex As Exception
                     Console.WriteLine($"Error saving config: {ex.Message}")
                 End Try
@@ -94,8 +87,8 @@ Namespace WWIV.Services
             SyncLock _lock
                 If File.Exists(_statusFile) Then
                     Try
-                        Dim json = File.ReadAllText(_statusFile)
-                        _status = JsonSerializer.Deserialize(Of SystemStatus)(json, _jsonOptions)
+                        Dim doc = XDocument.Load(_statusFile)
+                        _status = SystemStatus.FromXml(doc.Root)
                     Catch ex As Exception
                         Console.WriteLine($"Error loading status: {ex.Message}")
                         _status = New SystemStatus()
@@ -115,8 +108,8 @@ Namespace WWIV.Services
         Private Sub SaveStatus()
             SyncLock _lock
                 Try
-                    Dim json = JsonSerializer.Serialize(_status, _jsonOptions)
-                    File.WriteAllText(_statusFile, json)
+                    Dim doc = New XDocument(_status.ToXml())
+                    doc.Save(_statusFile)
                 Catch ex As Exception
                     Console.WriteLine($"Error saving status: {ex.Message}")
                 End Try

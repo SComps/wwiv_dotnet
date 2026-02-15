@@ -1,23 +1,18 @@
 Imports System
 Imports System.IO
-Imports System.Text.Json
+Imports System.Xml.Linq
 Imports System.Collections.Concurrent
+Imports System.Linq
 Imports wwiv3270.WWIV.Data
 
 Namespace WWIV.Services
     ''' <summary>
-    ''' Service for managing local email messages
+    ''' Service for managing local email messages using XML
     ''' </summary>
     Public Class EmailService
         Private ReadOnly _dataDir As String
         Private ReadOnly _emailDir As String
         
-        Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
-            .WriteIndented = True,
-            .PropertyNameCaseInsensitive = True,
-            .TypeInfoResolver = WWIVJsonContext.Default
-        }
-
         Private ReadOnly _emailCache As New ConcurrentDictionary(Of Integer, List(Of EmailMessage))()
         Private ReadOnly _lock As New Object()
 
@@ -31,11 +26,14 @@ Namespace WWIV.Services
         Public Function GetEmails(userNumber As Integer) As List(Of EmailMessage)
             If _emailCache.ContainsKey(userNumber) Then Return _emailCache(userNumber)
             
-            Dim userFile = Path.Combine(_emailDir, $"user_{userNumber}.json")
+            Dim userFile = Path.Combine(_emailDir, $"user_{userNumber}.xml")
             If File.Exists(userFile) Then
                 Try
-                    Dim json = File.ReadAllText(userFile)
-                    Dim emails = JsonSerializer.Deserialize(Of List(Of EmailMessage))(json, _jsonOptions)
+                    Dim doc = XDocument.Load(userFile)
+                    Dim emails = New List(Of EmailMessage)()
+                    For Each el In doc.Root.Elements("Message")
+                        emails.Add(DirectCast(MessageHeader.FromXml(el), EmailMessage))
+                    Next
                     _emailCache(userNumber) = emails
                     Return emails
                 Catch ex As Exception
@@ -59,9 +57,12 @@ Namespace WWIV.Services
             If Not _emailCache.ContainsKey(userNumber) Then Return
             
             Try
-                Dim userFile = Path.Combine(_emailDir, $"user_{userNumber}.json")
-                Dim json = JsonSerializer.Serialize(_emailCache(userNumber), _jsonOptions)
-                File.WriteAllText(userFile, json)
+                Dim userFile = Path.Combine(_emailDir, $"user_{userNumber}.xml")
+                Dim doc = New XDocument(New XElement("Emails"))
+                For Each msg In _emailCache(userNumber)
+                    doc.Root.Add(msg.ToXml())
+                Next
+                doc.Save(userFile)
             Catch ex As Exception
                 Console.WriteLine($"Error saving email for user {userNumber}: {ex.Message}")
             End Try

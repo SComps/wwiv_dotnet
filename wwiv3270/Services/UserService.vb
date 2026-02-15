@@ -1,19 +1,17 @@
 Imports System
 Imports System.IO
-Imports System.Text.Json
-Imports System.Text.Json.Serialization
+Imports System.Xml.Linq
 Imports System.Collections.Generic
 Imports wwiv3270.WWIV.Data
 
 Namespace WWIV.Services
     ''' <summary>
-    ''' Service for managing user accounts using JSON storage
-    ''' AOT-compatible, no marshaling required
+    ''' Service for managing user accounts using XML storage
+    ''' AOT-compatible manual serialization
     ''' </summary>
     Public Class UserService
         Private ReadOnly _dataDir As String
         Private ReadOnly _usersFile As String
-        Private ReadOnly _jsonOptions As JsonSerializerOptions
         
         ' In-memory cache for performance
         Private _userCache As Dictionary(Of Integer, UserRecord)
@@ -22,15 +20,7 @@ Namespace WWIV.Services
         
         Public Sub New(Optional dataDir As String = Nothing)
             _dataDir = If(dataDir, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data"))
-            _usersFile = Path.Combine(_dataDir, "users.json")
-            
-            ' Configure JSON options for AOT
-            _jsonOptions = New JsonSerializerOptions With {
-                .WriteIndented = True,
-                .PropertyNameCaseInsensitive = True,
-                .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                .TypeInfoResolver = WWIVJsonContext.Default
-            }
+            _usersFile = Path.Combine(_dataDir, "users.xml")
             
             ' Ensure data directory exists
             If Not Directory.Exists(_dataDir) Then
@@ -41,25 +31,22 @@ Namespace WWIV.Services
             LoadUsers()
         End Sub
         
-        ''' <summary>
-        ''' Load all users from JSON file into memory
-        ''' </summary>
         Private Sub LoadUsers()
             _userCache = New Dictionary(Of Integer, UserRecord)()
             _nameIndex = New Dictionary(Of String, Integer)(StringComparer.OrdinalIgnoreCase)
             
             If Not File.Exists(_usersFile) Then
-                ' Create empty users file
                 SaveUsers()
                 Return
             End If
             
             Try
-                Dim json = File.ReadAllText(_usersFile)
-                Dim users = JsonSerializer.Deserialize(Of List(Of UserRecord))(json, _jsonOptions)
+                Dim doc = XDocument.Load(_usersFile)
+                Dim usersRoot = doc.Element("Users")
                 
-                If users IsNot Nothing Then
-                    For Each user In users
+                If usersRoot IsNot Nothing Then
+                    For Each userEl In usersRoot.Elements("User")
+                        Dim user = UserRecord.FromXml(userEl)
                         If Not user.IsDeleted Then
                             _userCache(user.UserNumber) = user
                             _nameIndex(user.Name.Trim()) = user.UserNumber
@@ -74,28 +61,23 @@ Namespace WWIV.Services
                 Console.WriteLine($"Loaded {_userCache.Count} users from {_usersFile}")
             Catch ex As Exception
                 Console.WriteLine($"Error loading users: {ex.Message}")
-                ' Start fresh if file is corrupted
                 _userCache.Clear()
                 _nameIndex.Clear()
             End Try
         End Sub
         
-        ''' <summary>
-        ''' Save all users to JSON file
-        ''' </summary>
         Private Sub SaveUsers()
             Try
-                Dim users = _userCache.Values.ToList()
-                Dim json = JsonSerializer.Serialize(users, _jsonOptions)
-                File.WriteAllText(_usersFile, json)
+                Dim doc = New XDocument(New XElement("Users"))
+                For Each user In _userCache.Values
+                    doc.Root.Add(user.ToXml())
+                Next
+                doc.Save(_usersFile)
             Catch ex As Exception
                 Console.WriteLine($"Error saving users: {ex.Message}")
             End Try
         End Sub
         
-        ''' <summary>
-        ''' Get user by user number
-        ''' </summary>
         Public Function GetUser(userNumber As Integer) As UserRecord
             If _userCache.ContainsKey(userNumber) Then
                 Return _userCache(userNumber)
@@ -103,9 +85,6 @@ Namespace WWIV.Services
             Return Nothing
         End Function
         
-        ''' <summary>
-        ''' Find user by name
-        ''' </summary>
         Public Function FindUser(name As String) As Integer
             If String.IsNullOrWhiteSpace(name) Then Return 0
             
@@ -133,9 +112,6 @@ Namespace WWIV.Services
             Return 0
         End Function
         
-        ''' <summary>
-        ''' Add or update a user
-        ''' </summary>
         Public Sub SaveUser(user As UserRecord)
             If user Is Nothing Then Return
             
@@ -162,11 +138,7 @@ Namespace WWIV.Services
             Console.WriteLine($"Saved user #{user.UserNumber}: {user.Name.Trim()}")
         End Sub
         
-        ''' <summary>
-        ''' Create a new user
-        ''' </summary>
         Public Function CreateUser(name As String, realName As String, password As String) As UserRecord
-            ' Check if name already exists
             If FindUser(name) > 0 Then
                 Throw New InvalidOperationException($"User '{name}' already exists")
             End If
@@ -176,9 +148,6 @@ Namespace WWIV.Services
             Return user
         End Function
         
-        ''' <summary>
-        ''' Delete a user (mark as deleted)
-        ''' </summary>
         Public Sub DeleteUser(userNumber As Integer)
             If Not _userCache.ContainsKey(userNumber) Then Return
             
@@ -189,29 +158,19 @@ Namespace WWIV.Services
             _userCache.Remove(userNumber)
             _nameIndex.Remove(user.Name.Trim())
             
-            ' Persist to disk
             SaveUsers()
             
             Console.WriteLine($"Deleted user #{userNumber}: {user.Name.Trim()}")
         End Sub
         
-        ''' <summary>
-        ''' Get all active users
-        ''' </summary>
         Public Function GetAllUsers() As List(Of UserRecord)
             Return _userCache.Values.OrderBy(Function(u) u.UserNumber).ToList()
         End Function
         
-        ''' <summary>
-        ''' Get total user count
-        ''' </summary>
         Public Function GetUserCount() As Integer
             Return _userCache.Count
         End Function
         
-        ''' <summary>
-        ''' Validate user credentials
-        ''' </summary>
         Public Function ValidateCredentials(username As String, password As String) As UserRecord
             Dim userNum = FindUser(username)
             If userNum <= 0 Then Return Nothing
@@ -231,9 +190,6 @@ Namespace WWIV.Services
             Return Nothing
         End Function
         
-        ''' <summary>
-        ''' Update user's last activity
-        ''' </summary>
         Public Sub UpdateActivity(userNumber As Integer, timeSpent As Single)
             Dim user = GetUser(userNumber)
             If user Is Nothing Then Return

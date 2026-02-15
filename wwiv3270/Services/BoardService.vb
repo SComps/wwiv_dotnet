@@ -1,24 +1,19 @@
 Imports System
 Imports System.IO
-Imports System.Text.Json
+Imports System.Xml.Linq
 Imports System.Collections.Concurrent
+Imports System.Linq
 Imports wwiv3270.WWIV.Data
 
 Namespace WWIV.Services
     ''' <summary>
-    ''' Service for managing message sub-boards and messages
+    ''' Service for managing message sub-boards and messages using XML
     ''' </summary>
     Public Class BoardService
         Private ReadOnly _dataDir As String
         Private ReadOnly _subsFile As String
         Private ReadOnly _msgsDir As String
         
-        Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
-            .WriteIndented = True,
-            .PropertyNameCaseInsensitive = True,
-            .TypeInfoResolver = WWIVJsonContext.Default
-        }
-
         Private _subList As List(Of SubBoard)
         Private ReadOnly _msgCache As New ConcurrentDictionary(Of Integer, List(Of MessageHeader))()
         Private ReadOnly _lock As New Object()
@@ -26,7 +21,7 @@ Namespace WWIV.Services
         Public Sub New(Optional dataDir As String = Nothing)
             _dataDir = If(dataDir, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data"))
             _msgsDir = Path.Combine(_dataDir, "msgs")
-            _subsFile = Path.Combine(_dataDir, "subs.json")
+            _subsFile = Path.Combine(_dataDir, "subs.xml")
             
             If Not Directory.Exists(_msgsDir) Then Directory.CreateDirectory(_msgsDir)
             
@@ -37,8 +32,11 @@ Namespace WWIV.Services
             SyncLock _lock
                 If File.Exists(_subsFile) Then
                     Try
-                        Dim json = File.ReadAllText(_subsFile)
-                        _subList = JsonSerializer.Deserialize(Of List(Of SubBoard))(json, _jsonOptions)
+                        Dim doc = XDocument.Load(_subsFile)
+                        _subList = New List(Of SubBoard)()
+                        For Each el In doc.Root.Elements("SubBoard")
+                            _subList.Add(SubBoard.FromXml(el))
+                        Next
                     Catch ex As Exception
                         Console.WriteLine($"Error loading sub-boards: {ex.Message}")
                         _subList = New List(Of SubBoard)()
@@ -55,8 +53,11 @@ Namespace WWIV.Services
         Public Sub SaveSubs()
             SyncLock _lock
                 Try
-                    Dim json = JsonSerializer.Serialize(_subList, _jsonOptions)
-                    File.WriteAllText(_subsFile, json)
+                    Dim doc = New XDocument(New XElement("SubBoards"))
+                    For Each sb In _subList
+                        doc.Root.Add(sb.ToXml())
+                    Next
+                    doc.Save(_subsFile)
                 Catch ex As Exception
                     Console.WriteLine($"Error saving sub-boards: {ex.Message}")
                 End Try
@@ -73,11 +74,14 @@ Namespace WWIV.Services
             Dim subBoard = _subList.FirstOrDefault(Function(s) s.Number = subNumber)
             If subBoard Is Nothing Then Return New List(Of MessageHeader)()
             
-            Dim subFile = Path.Combine(_msgsDir, $"sub_{subNumber}.json")
+            Dim subFile = Path.Combine(_msgsDir, $"sub_{subNumber}.xml")
             If File.Exists(subFile) Then
                 Try
-                    Dim json = File.ReadAllText(subFile)
-                    Dim msgs = JsonSerializer.Deserialize(Of List(Of MessageHeader))(json, _jsonOptions)
+                    Dim doc = XDocument.Load(subFile)
+                    Dim msgs = New List(Of MessageHeader)()
+                    For Each el In doc.Root.Elements("Message")
+                        msgs.Add(MessageHeader.FromXml(el))
+                    Next
                     _msgCache(subNumber) = msgs
                     Return msgs
                 Catch ex As Exception
@@ -101,9 +105,12 @@ Namespace WWIV.Services
             If Not _msgCache.ContainsKey(subNumber) Then Return
             
             Try
-                Dim subFile = Path.Combine(_msgsDir, $"sub_{subNumber}.json")
-                Dim json = JsonSerializer.Serialize(_msgCache(subNumber), _jsonOptions)
-                File.WriteAllText(subFile, json)
+                Dim subFile = Path.Combine(_msgsDir, $"sub_{subNumber}.xml")
+                Dim doc = New XDocument(New XElement("Messages"))
+                For Each msg In _msgCache(subNumber)
+                    doc.Root.Add(msg.ToXml())
+                Next
+                doc.Save(subFile)
             Catch ex As Exception
                 Console.WriteLine($"Error saving messages for sub {subNumber}: {ex.Message}")
             End Try
