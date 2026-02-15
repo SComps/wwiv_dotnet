@@ -11,3 +11,11 @@
 02/15/26 11:34:05 - New TN3270 connection from 127.0.0.1:52109
 02/15/26 11:34:05 - Negotiation Complete for 127.0.0.1:52109. Show Login Screen.
 02/15/26 11:34:39 - Session 34d1c831-1199-4f6b-a1ed-c35cf9e322f6 disconnected.
+02/15/26 11:49:51 - Initializing WWIV 3270 System...
+02/15/26 11:49:51 - System Name: HOLY COW A BBS!
+02/15/26 11:49:51 - TN3270 Listener started on port 2323
+02/15/26 11:49:51 - Telnet Listener started on port 23
+02/15/26 11:49:51 - System is Running. Press Ctrl+C to stop.
+02/15/26 11:50:13 - New TN3270 connection from 127.0.0.1:59492
+02/15/26 11:50:13 - Negotiation Complete for 127.0.0.1:59492. Show Login Screen.
+02/15/26 11:51:01 - Session feb1f1ef-6fcf-4435-b558-c4fc18a1a985 disconnected.

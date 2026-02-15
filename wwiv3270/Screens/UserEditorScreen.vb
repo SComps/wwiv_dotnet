@@ -54,27 +54,33 @@ Namespace WWIV.Screens
             Dim endIdx = Math.Min(_userList.Count - 1, startIdx + 14)
             
             Dim row = 5
-            For i = startIdx To endIdx
-                Dim user = _userList(i)
-                
-                Dim color = If(i = _selectedIndex, TN3270Color.Green, TN3270Color.Neutral)
-                Dim highlight = If(i = _selectedIndex, TN3270Highlight.ReverseVideo, TN3270Highlight.None)
-                
-                tn.AddField(row, 2, 4, user.UserNumber.ToString().PadLeft(4), True, color, TN3270Color.Neutral, highlight)
-                tn.AddField(row, 7, 30, user.Name.Trim().PadRight(30).Substring(0, 30), True, color, TN3270Color.Neutral, highlight)
-                tn.AddField(row, 38, 20, user.RealName.Trim().PadRight(20).Substring(0, 20), True, color, TN3270Color.Neutral, highlight)
-                tn.AddField(row, 60, 3, user.SecurityLevel.ToString().PadLeft(3), True, color, TN3270Color.Neutral, highlight)
-                tn.AddField(row, 64, 6, user.TotalLogons.ToString().PadLeft(6), True, color, TN3270Color.Neutral, highlight)
-                tn.AddField(row, 72, 8, user.LastLogon.ToString("MM/dd/yy"), True, color, TN3270Color.Neutral, highlight)
-                
-                row += 1
-            Next
+            If _userList.Count = 0 Then
+                tn.WriteText(row, 2, "(No users found)")
+            Else
+                For i = startIdx To endIdx
+                    Dim user = _userList(i)
+                    
+                    Dim color = If(i = _selectedIndex, TN3270Color.Green, TN3270Color.Neutral)
+                    Dim highlight = If(i = _selectedIndex, TN3270Highlight.ReverseVideo, TN3270Highlight.None)
+                    
+                    tn.AddField(row, 2, 4, user.UserNumber.ToString().PadLeft(4), True, color, TN3270Color.Neutral, highlight)
+                    tn.AddField(row, 7, 30, user.Name.Trim().PadRight(30).Substring(0, Math.Min(30, user.Name.Trim().Length)).PadRight(30), True, color, TN3270Color.Neutral, highlight)
+                    tn.AddField(row, 38, 20, user.RealName.Trim().PadRight(20).Substring(0, Math.Min(20, user.RealName.Trim().Length)).PadRight(20), True, color, TN3270Color.Neutral, highlight)
+                    tn.AddField(row, 60, 3, user.SecurityLevel.ToString().PadLeft(3), True, color, TN3270Color.Neutral, highlight)
+                    tn.AddField(row, 64, 6, user.TotalLogons.ToString().PadLeft(6), True, color, TN3270Color.Neutral, highlight)
+                    tn.AddField(row, 72, 8, user.LastLogon.ToString("MM/dd/yy"), True, color, TN3270Color.Neutral, highlight)
+                    
+                    row += 1
+                Next
+            End If
+            
+            ' Status Row / Command Row
+            tn.WriteText(21, 1, "═" * 80, TN3270Color.Blue)
             
             ' Edit Panel (if in edit mode)
             If _editMode AndAlso _selectedIndex >= 0 AndAlso _selectedIndex < _userList.Count Then
                 Dim user = _userList(_selectedIndex)
                 
-                tn.WriteText(21, 2, "═" * 78, TN3270Color.Yellow)
                 tn.WriteText(22, 2, $"Editing User #{user.UserNumber}: {user.Name.Trim()}", TN3270Color.Green)
                 Select Case _editField
                     Case "sl"
@@ -94,11 +100,15 @@ Namespace WWIV.Screens
                             tn.AddField(22, 61, 1, "", False, TN3270Color.Red, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
                         End If
                 End Select
+            Else
+                ' Command Line when not in edit mode
+                tn.WriteText(22, 2, "Command / Jump to User # / Search Name:", TN3270Color.Yellow)
+                tn.AddField(22, 42, 30, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
             End If
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
-            Dim statusText = If(_editMode, "ENTER=Save  ESC=Cancel", "↑↓=Select  E=Edit SL  D=Edit DSL  N=Edit Note  X=Delete  Q=Quit")
+            Dim statusText = If(_editMode, "ENTER=Save  PF3=Cancel", "PF1=Up  PF2=Down  ENTER=Submit  E,D,N,X=Edit  PF3=Quit")
             tn.WriteText(24, 2, statusText, TN3270Color.Yellow, TN3270Color.Blue)
             
             tn.ShowScreen(True)
@@ -139,7 +149,7 @@ Namespace WWIV.Screens
                         tn.ClearFields()
                         RenderTN3270(session)
                         
-                    Case &H6D ' ESC or Clear - Cancel
+                    Case &HC3 ' PF3 - Cancel
                         _editMode = False
                         tn.ClearFields()
                         RenderTN3270(session)
@@ -147,6 +157,16 @@ Namespace WWIV.Screens
             Else
                 ' Handle navigation mode input
                 Select Case e.AidKey
+                    Case &H7D ' ENTER - Proccess Command
+                        Dim cmd = tn.GetFieldValue("command")?.Trim()
+                        If Not String.IsNullOrEmpty(cmd) Then
+                            ProcessCommand(session, cmd)
+                        Else
+                            ' Default ENTER action could be "Edit"
+                        End If
+                        tn.ClearFields()
+                        RenderTN3270(session)
+
                     Case &HF1 ' PF1 - Up
                         If _selectedIndex > 0 Then
                             _selectedIndex -= 1
@@ -173,7 +193,7 @@ Namespace WWIV.Screens
                         End If
                         
                     Case &H84, &HC4 ' D - Edit DSL
-                         If _userList.Count > 0 Then
+                        If _userList.Count > 0 Then
                             _editMode = True
                             _editField = "dsl"
                             tn.ClearFields()
@@ -196,6 +216,35 @@ Namespace WWIV.Screens
                             RenderTN3270(session)
                         End If
                 End Select
+            End If
+        End Sub
+
+        Private Sub ProcessCommand(session As TN3270SessionAdapter, cmd As String)
+            ' Check if numeric (Jump to user #)
+            Dim userNum As Integer
+            If Integer.TryParse(cmd, userNum) Then
+                Dim idx = _userList.FindIndex(Function(u) u.UserNumber = userNum)
+                If idx >= 0 Then
+                    _selectedIndex = idx
+                End If
+                Return
+            End If
+
+            ' Check for single character commands if they were typed in the field
+            If cmd.Length = 1 Then
+                Select Case cmd.ToUpper()
+                    Case "E" : _editMode = True : _editField = "sl" : Return
+                    Case "D" : _editMode = True : _editField = "dsl" : Return
+                    Case "N" : _editMode = True : _editField = "note" : Return
+                    Case "X" : _editMode = True : _editField = "delete" : Return
+                    Case "Q" : session.NavigateTo(New SysopMenuScreen()) : Return
+                End Select
+            End If
+
+            ' Search by name
+            Dim searchIdx = _userList.FindIndex(Function(u) u.Name.Trim().Contains(cmd, StringComparison.OrdinalIgnoreCase))
+            If searchIdx >= 0 Then
+                _selectedIndex = searchIdx
             End If
         End Sub
         
