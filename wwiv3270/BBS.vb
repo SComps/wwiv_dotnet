@@ -9,13 +9,14 @@ Namespace WWIV
     Public Class BBS
         Private _tnListener As TN3270Listener
         Private _telnetListener As TelnetListener
-        Private _config As New WWIV.Data.ConfigRec()
+        Private _configService As Services.ConfigService
         
         Public Sub Start()
             Console.WriteLine("Initializing WWIV 3270 System...")
 
-            ' Initialize Config (TODO: Read from file)
-            _config.SystemName = "WWIV 3270 Default BBS"
+            ' Initialize Config
+            _configService = New Services.ConfigService()
+            Console.WriteLine($"System Name: {_configService.Config.SystemName}")
             
             ' Initialize TN3270 Listener
             _tnListener = New TN3270Listener(2323)
@@ -40,6 +41,9 @@ Namespace WWIV
             Dim adapter As New TN3270SessionAdapter(session)
             SessionManager.RegisterSession(adapter)
             
+            ' Increment system calls
+            _configService.IncrementCalls()
+            
             ' Start negotiation
             session.StartNegotiation()
             
@@ -61,6 +65,9 @@ Namespace WWIV
             
             Dim adapter = New TelnetSessionAdapter(client)
             SessionManager.RegisterSession(adapter)
+            
+            ' Increment system calls
+            _configService.IncrementCalls()
             
             ' Navigate to login screen
             adapter.NavigateTo(New Screens.LoginScreen())

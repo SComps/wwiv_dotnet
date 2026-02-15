@@ -35,7 +35,13 @@ Namespace WWIV.Screens
             tn.WriteText(14, 10, "[U] User List")
             tn.WriteText(15, 10, "[X] File Transfer")
             tn.WriteText(16, 10, "[Y] Your Settings")
-            tn.WriteText(17, 10, "[?] Help")
+            
+            ' Sysop menu (if SL >= 100)
+            If session.User.SecurityLevel >= 100 Then
+                tn.WriteText(17, 10, "[//] Sysop Menu", TN3270Color.Red)
+            End If
+            
+            tn.WriteText(19, 10, "[?] Help")
             
             ' Input Field
             tn.WriteText(20, 10, "Command:")
@@ -43,7 +49,7 @@ Namespace WWIV.Screens
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
-            tn.WriteText(24, 2, $"SL:{session.User.Sl}  F3=Logoff", TN3270Color.Yellow, TN3270Color.Blue)
+            tn.WriteText(24, 2, $"SL:{session.User.SecurityLevel}  F3=Logoff", TN3270Color.Yellow, TN3270Color.Blue)
             
             tn.ShowScreen(True)
         End Sub
@@ -83,6 +89,18 @@ Namespace WWIV.Screens
                     Select Case cmd
                         Case "G"
                             session.Disconnect()
+                            
+                        Case "//"
+                            ' Sysop menu - check security level
+                            If session.User.SecurityLevel >= 100 Then
+                                session.NavigateTo(New SysopMenuScreen())
+                            Else
+                                tn.ClearFields()
+                                RenderTN3270(session)
+                                tn.WriteText(22, 10, "Access denied. Sysop access required.", TN3270Color.Red)
+                                tn.ShowScreen(False)
+                            End If
+                            
                         Case "E", "M", "P", "U", "X", "Y", "?"
                             ' Show "Not Implemented" message
                             tn.ClearFields()

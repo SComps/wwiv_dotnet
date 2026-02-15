@@ -96,32 +96,27 @@ Namespace WWIV.Screens
         End Sub
 
         Private Function ValidateLogin(userId As String, password As String, session As ISession) As Boolean
-            ' TODO: Implement actual user validation from user.lst
-            ' For now, accept "SYSOP" / "SYSOP" or any non-empty credentials
-            
-            If String.IsNullOrWhiteSpace(userId) Then Return False
-            
-            ' Temporary: Accept SYSOP/SYSOP or any user with matching password
-            If userId.Trim().ToUpper() = "SYSOP" AndAlso password = "SYSOP" Then
-                ' Load sysop user record
-                Dim sysopUser As New Data.UserRec()
-                sysopUser.Name = "SYSOP"
-                sysopUser.RealName = "System Operator"
-                sysopUser.Sl = 255 ' Max security level
-                session.User = sysopUser
-                Return True
+            ' Check for new user
+            If userId.Trim().ToUpper() = "NEW" Then
+                ' Navigate to new user screen
+                session.NavigateTo(New NewUserScreen())
+                Return False ' Don't proceed to main menu
             End If
             
-            ' For demo purposes, accept any non-empty credentials
-            If Not String.IsNullOrWhiteSpace(password) Then
-                Dim newUser As New Data.UserRec()
-                newUser.Name = userId.Trim()
-                newUser.Sl = 10 ' Default user level
-                session.User = newUser
-                Return True
+            ' Use UserService to find and validate user
+            Dim userService As New Services.UserService()
+            Dim user = userService.ValidateCredentials(userId, password)
+            
+            If user Is Nothing Then
+                Return False
             End If
             
-            Return False
+            ' Update session with user data
+            session.User = user
+            
+            Console.WriteLine($"User #{user.UserNumber} ({user.Name.Trim()}) logged in successfully.")
+            
+            Return True
         End Function
     End Class
 End Namespace

@@ -4,6 +4,22 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>wwiv3270</RootNamespace>
     <TargetFramework>net9.0</TargetFramework>
+    
+    <!-- AOT Compilation Settings -->
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+    
+    <!-- Trimming Settings for smaller binaries -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    
+    <!-- Self-Contained Settings -->
+    <SelfContained>true</SelfContained>
+    
+    <!-- Platform-specific optimizations -->
+    <OptimizationPreference>Speed</OptimizationPreference>
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,11 +9,10 @@ Namespace WWIV.Adapters
 
         Private _tnSession As TN3270Session
         Private _sessionId As Guid
-        Private _user As UserRec
+        Private _user As UserRecord
         Private _currentSub As Integer = 0
         Private _currentDir As Integer = 0
         Private _currentScreen As IScreen
-
         Public Sub New(tnSession As TN3270Session)
             _tnSession = tnSession
             _sessionId = Guid.NewGuid()
@@ -33,11 +32,11 @@ Namespace WWIV.Adapters
             End Get
         End Property
 
-        Public Property User As UserRec Implements ISession.User
+        Public Property User As UserRecord Implements ISession.User
             Get
                 Return _user
             End Get
-            Set(value As UserRec)
+            Set(value As UserRecord)
                 _user = value
             End Set
         End Property

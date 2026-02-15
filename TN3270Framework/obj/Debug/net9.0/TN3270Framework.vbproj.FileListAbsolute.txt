@@ -20,3 +20,4 @@ C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Debug\ne
 C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Debug\net9.0\refint\TN3270Framework.dll
 C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Debug\net9.0\TN3270Framework.pdb
 C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Debug\net9.0\ref\TN3270Framework.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\TN3270Framework\obj\Debug\net9.0\TN3270Framework.sourcelink.json

@@ -14,7 +14,7 @@ Namespace WWIV.Telnet
         Private _reader As StreamReader
         Private _writer As StreamWriter
         Private _sessionId As Guid
-        Private _user As UserRec
+        Private _user As UserRecord
         Private _currentSub As Integer = 0
         Private _currentDir As Integer = 0
         Private _currentScreen As IScreen
@@ -33,11 +33,11 @@ Namespace WWIV.Telnet
             End Get
         End Property
 
-        Public Property User As UserRec Implements ISession.User
+        Public Property User As UserRecord Implements ISession.User
             Get
                 Return _user
             End Get
-            Set(value As UserRec)
+            Set(value As UserRecord)
                 _user = value
             End Set
         End Property

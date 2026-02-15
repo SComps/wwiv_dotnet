@@ -1,10 +1,17 @@
 {
   "version": 2,
-  "dgSpecHash": "0fuqN4gBL2E=",
+  "dgSpecHash": "ThhwrSNCJwo=",
   "success": true,
   "projectFilePath": "C:\\Users\\Scott\\.gemini\\antigravity\\scratch\\wwiv3270\\wwiv3270\\wwiv3270.vbproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Scott\\.nuget\\packages\\system.text.encoding.codepages\\9.0.1\\system.text.encoding.codepages.9.0.1.nupkg.sha512"
+    "C:\\Users\\Scott\\.nuget\\packages\\microsoft.dotnet.ilcompiler\\9.0.12\\microsoft.dotnet.ilcompiler.9.0.12.nupkg.sha512",
+    "C:\\Users\\Scott\\.nuget\\packages\\microsoft.net.illink.tasks\\9.0.12\\microsoft.net.illink.tasks.9.0.12.nupkg.sha512",
+    "C:\\Users\\Scott\\.nuget\\packages\\runtime.win-x64.microsoft.dotnet.ilcompiler\\9.0.12\\runtime.win-x64.microsoft.dotnet.ilcompiler.9.0.12.nupkg.sha512",
+    "C:\\Users\\Scott\\.nuget\\packages\\system.text.encoding.codepages\\9.0.1\\system.text.encoding.codepages.9.0.1.nupkg.sha512",
+    "C:\\Users\\Scott\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\9.0.12\\microsoft.netcore.app.runtime.win-x64.9.0.12.nupkg.sha512",
+    "C:\\Users\\Scott\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\9.0.12\\microsoft.windowsdesktop.app.runtime.win-x64.9.0.12.nupkg.sha512",
+    "C:\\Users\\Scott\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\9.0.12\\microsoft.aspnetcore.app.runtime.win-x64.9.0.12.nupkg.sha512",
+    "C:\\Users\\Scott\\.nuget\\packages\\runtime.win-x64.microsoft.dotnet.ilcompiler\\9.0.12\\runtime.win-x64.microsoft.dotnet.ilcompiler.9.0.12.nupkg.sha512"
   ],
   "logs": []
 }
