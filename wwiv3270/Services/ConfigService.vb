@@ -12,7 +12,11 @@ Namespace WWIV.Services
         Private ReadOnly _dataDir As String
         Private ReadOnly _configFile As String
         Private ReadOnly _statusFile As String
-        ' Data structures are managed via WWIVJsonContext
+        Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
+            .WriteIndented = True,
+            .PropertyNameCaseInsensitive = True,
+            .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        }
 
         Private _config As SystemConfig
         Private _status As SystemStatus
@@ -62,7 +66,7 @@ Namespace WWIV.Services
                 If File.Exists(_configFile) Then
                     Try
                         Dim json = File.ReadAllText(_configFile)
-                        _config = JsonSerializer.Deserialize(json, WWIVJsonContext.Default.SystemConfig)
+                        _config = JsonSerializer.Deserialize(Of SystemConfig)(json, _jsonOptions)
                     Catch ex As Exception
                         Console.WriteLine($"Error loading config: {ex.Message}")
                         _config = New SystemConfig()
@@ -77,7 +81,7 @@ Namespace WWIV.Services
         Private Sub SaveConfig()
             SyncLock _lock
                 Try
-                    Dim json = JsonSerializer.Serialize(_config, WWIVJsonContext.Default.SystemConfig)
+                    Dim json = JsonSerializer.Serialize(_config, _jsonOptions)
                     File.WriteAllText(_configFile, json)
                 Catch ex As Exception
                     Console.WriteLine($"Error saving config: {ex.Message}")
@@ -90,7 +94,7 @@ Namespace WWIV.Services
                 If File.Exists(_statusFile) Then
                     Try
                         Dim json = File.ReadAllText(_statusFile)
-                        _status = JsonSerializer.Deserialize(json, WWIVJsonContext.Default.SystemStatus)
+                        _status = JsonSerializer.Deserialize(Of SystemStatus)(json, _jsonOptions)
                     Catch ex As Exception
                         Console.WriteLine($"Error loading status: {ex.Message}")
                         _status = New SystemStatus()
@@ -110,7 +114,7 @@ Namespace WWIV.Services
         Private Sub SaveStatus()
             SyncLock _lock
                 Try
-                    Dim json = JsonSerializer.Serialize(_status, WWIVJsonContext.Default.SystemStatus)
+                    Dim json = JsonSerializer.Serialize(_status, _jsonOptions)
                     File.WriteAllText(_statusFile, json)
                 Catch ex As Exception
                     Console.WriteLine($"Error saving status: {ex.Message}")

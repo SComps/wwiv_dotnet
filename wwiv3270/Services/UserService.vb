@@ -24,7 +24,12 @@ Namespace WWIV.Services
             _dataDir = If(dataDir, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data"))
             _usersFile = Path.Combine(_dataDir, "users.json")
             
-            ' Data structures are managed via WWIVJsonContext
+            ' Configure JSON options for AOT
+            _jsonOptions = New JsonSerializerOptions With {
+                .WriteIndented = True,
+                .PropertyNameCaseInsensitive = True,
+                .DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            }
             
             ' Ensure data directory exists
             If Not Directory.Exists(_dataDir) Then
@@ -50,7 +55,7 @@ Namespace WWIV.Services
             
             Try
                 Dim json = File.ReadAllText(_usersFile)
-                Dim users = JsonSerializer.Deserialize(json, WWIVJsonContext.Default.ListUserRecord)
+                Dim users = JsonSerializer.Deserialize(Of List(Of UserRecord))(json, _jsonOptions)
                 
                 If users IsNot Nothing Then
                     For Each user In users
@@ -80,7 +85,7 @@ Namespace WWIV.Services
         Private Sub SaveUsers()
             Try
                 Dim users = _userCache.Values.ToList()
-                Dim json = JsonSerializer.Serialize(users, WWIVJsonContext.Default.ListUserRecord)
+                Dim json = JsonSerializer.Serialize(users, _jsonOptions)
                 File.WriteAllText(_usersFile, json)
             Catch ex As Exception
                 Console.WriteLine($"Error saving users: {ex.Message}")

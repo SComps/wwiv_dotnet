@@ -13,7 +13,10 @@ Namespace WWIV.Services
         Private ReadOnly _subsFile As String
         Private ReadOnly _msgsDir As String
         
-        ' Data structures are managed via WWIVJsonContext
+        Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
+            .WriteIndented = True,
+            .PropertyNameCaseInsensitive = True
+        }
 
         Private _subList As List(Of SubBoard)
         Private ReadOnly _msgCache As New ConcurrentDictionary(Of Integer, List(Of MessageHeader))()
@@ -34,7 +37,7 @@ Namespace WWIV.Services
                 If File.Exists(_subsFile) Then
                     Try
                         Dim json = File.ReadAllText(_subsFile)
-                        _subList = JsonSerializer.Deserialize(json, WWIVJsonContext.Default.ListSubBoard)
+                        _subList = JsonSerializer.Deserialize(Of List(Of SubBoard))(json, _jsonOptions)
                     Catch ex As Exception
                         Console.WriteLine($"Error loading sub-boards: {ex.Message}")
                         _subList = New List(Of SubBoard)()
@@ -51,7 +54,7 @@ Namespace WWIV.Services
         Public Sub SaveSubs()
             SyncLock _lock
                 Try
-                    Dim json = JsonSerializer.Serialize(_subList, WWIVJsonContext.Default.ListSubBoard)
+                    Dim json = JsonSerializer.Serialize(_subList, _jsonOptions)
                     File.WriteAllText(_subsFile, json)
                 Catch ex As Exception
                     Console.WriteLine($"Error saving sub-boards: {ex.Message}")
@@ -73,7 +76,7 @@ Namespace WWIV.Services
             If File.Exists(subFile) Then
                 Try
                     Dim json = File.ReadAllText(subFile)
-                    Dim msgs = JsonSerializer.Deserialize(json, WWIVJsonContext.Default.ListMessageHeader)
+                    Dim msgs = JsonSerializer.Deserialize(Of List(Of MessageHeader))(json, _jsonOptions)
                     _msgCache(subNumber) = msgs
                     Return msgs
                 Catch ex As Exception
@@ -98,7 +101,7 @@ Namespace WWIV.Services
             
             Try
                 Dim subFile = Path.Combine(_msgsDir, $"sub_{subNumber}.json")
-                Dim json = JsonSerializer.Serialize(_msgCache(subNumber), WWIVJsonContext.Default.ListMessageHeader)
+                Dim json = JsonSerializer.Serialize(_msgCache(subNumber), _jsonOptions)
                 File.WriteAllText(subFile, json)
             Catch ex As Exception
                 Console.WriteLine($"Error saving messages for sub {subNumber}: {ex.Message}")

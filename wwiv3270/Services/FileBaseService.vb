@@ -13,7 +13,10 @@ Namespace WWIV.Services
         Private ReadOnly _dirsFile As String
         Private ReadOnly _fileIndicesDir As String
         
-        ' Data structures are managed via WWIVJsonContext
+        Private Shared ReadOnly _jsonOptions As New JsonSerializerOptions With {
+            .WriteIndented = True,
+            .PropertyNameCaseInsensitive = True
+        }
 
         Private _dirList As List(Of FileDirectory)
         Private ReadOnly _fileCache As New ConcurrentDictionary(Of Integer, List(Of FileBaseRecord))()
@@ -34,7 +37,7 @@ Namespace WWIV.Services
                 If File.Exists(_dirsFile) Then
                     Try
                         Dim json = File.ReadAllText(_dirsFile)
-                        _dirList = JsonSerializer.Deserialize(json, WWIVJsonContext.Default.ListFileDirectory)
+                        _dirList = JsonSerializer.Deserialize(Of List(Of FileDirectory))(json, _jsonOptions)
                     Catch ex As Exception
                         Console.WriteLine($"Error loading file directories: {ex.Message}")
                         _dirList = New List(Of FileDirectory)()
@@ -51,7 +54,7 @@ Namespace WWIV.Services
         Public Sub SaveDirs()
             SyncLock _lock
                 Try
-                    Dim json = JsonSerializer.Serialize(_dirList, WWIVJsonContext.Default.ListFileDirectory)
+                    Dim json = JsonSerializer.Serialize(_dirList, _jsonOptions)
                     File.WriteAllText(_dirsFile, json)
                 Catch ex As Exception
                     Console.WriteLine($"Error saving file directories: {ex.Message}")
@@ -73,7 +76,7 @@ Namespace WWIV.Services
             If File.Exists(indexFile) Then
                 Try
                     Dim json = File.ReadAllText(indexFile)
-                    Dim files = JsonSerializer.Deserialize(json, WWIVJsonContext.Default.ListFileBaseRecord)
+                    Dim files = JsonSerializer.Deserialize(Of List(Of FileBaseRecord))(json, _jsonOptions)
                     _fileCache(dirNumber) = files
                     Return files
                 Catch ex As Exception
@@ -98,7 +101,7 @@ Namespace WWIV.Services
             
             Try
                 Dim indexFile = Path.Combine(_fileIndicesDir, $"dir_{dirNumber}.json")
-                Dim json = JsonSerializer.Serialize(_fileCache(dirNumber), WWIVJsonContext.Default.ListFileBaseRecord)
+                Dim json = JsonSerializer.Serialize(_fileCache(dirNumber), _jsonOptions)
                 File.WriteAllText(indexFile, json)
             Catch ex As Exception
                 Console.WriteLine($"Error saving files for directory {dirNumber}: {ex.Message}")
