@@ -76,7 +76,7 @@ Namespace WWIV
             adapter.NavigateTo(New Screens.LoginScreen())
             
             ' Begin async handling loop for this session
-            Task.Run(Sub() HandleTelnetSession(adapter))
+            Task.Run(Function() HandleTelnetSession(adapter))
         End Sub
 
         Private Async Function HandleTelnetSession(session As TelnetSessionAdapter) As Task

@@ -12,7 +12,7 @@ Namespace WWIV.Manager
         End Sub
 
         Public Shared Sub UnregisterSession(sessionId As Guid)
-            Dim removedSession As ISession
+            Dim removedSession As ISession = Nothing
             _sessions.TryRemove(sessionId, removedSession)
             Console.WriteLine($"Session {sessionId} removed.")
         End Sub
