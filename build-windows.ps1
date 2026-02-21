@@ -35,8 +35,8 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Publish AOT self-contained for Windows
-Write-Host "[4/4] Publishing AOT self-contained binary for Windows..." -ForegroundColor Yellow
+# Publish AOT self-contained for Windows - wwiv3270
+Write-Host "[4/5] Publishing AOT self-contained binary for Windows (wwiv3270)..." -ForegroundColor Yellow
 $RuntimeId = "win-$Architecture"
 $OutputPath = "publish\windows-$Architecture"
 
@@ -50,10 +50,26 @@ dotnet publish wwiv3270\wwiv3270.vbproj `
     -o $OutputPath
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Publish failed!" -ForegroundColor Red
+    Write-Host "Publish wwiv3270 failed!" -ForegroundColor Red
     exit 1
 }
 
+# Publish AOT self-contained for Windows - wwivsetup
+Write-Host "[5/5] Publishing AOT self-contained binary for Windows (wwivsetup)..." -ForegroundColor Yellow
+
+dotnet publish wwivsetup\wwivsetup.vbproj `
+    -c $Configuration `
+    -r $RuntimeId `
+    --self-contained `
+    -p:PublishAot=true `
+    -p:PublishTrimmed=true `
+    -p:PublishSingleFile=false `
+    -o $OutputPath
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Publish wwivsetup failed!" -ForegroundColor Red
+    exit 1
+}
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Green
 Write-Host "  Build Complete!" -ForegroundColor Green

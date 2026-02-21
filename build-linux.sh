@@ -12,11 +12,9 @@ echo ""
 
 # Clean previous builds
 echo "[1/4] Cleaning previous builds..."
-dotnet clean -c "$CONFIGURATION"
-if [ $? -ne 0 ]; then
-    echo "Clean failed!"
-    exit 1
-fi
+# Force remove obj and bin folders which might contain Windows paths from previous builds
+find . -type d \( -name "bin" -o -name "obj" \) -exec rm -rf {} + 2>/dev/null
+dotnet clean -c "$CONFIGURATION" || true
 
 # Restore dependencies
 echo "[2/4] Restoring dependencies..."
@@ -35,7 +33,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Publish AOT self-contained for Linux
-echo "[4/4] Publishing AOT self-contained binary for Linux..."
+echo "[4/5] Publishing AOT self-contained binary for Linux (wwiv3270)..."
 RUNTIME_ID="linux-$ARCHITECTURE"
 OUTPUT_PATH="publish/linux-$ARCHITECTURE"
 
@@ -49,10 +47,25 @@ dotnet publish wwiv3270/wwiv3270.vbproj \
     -o "$OUTPUT_PATH"
 
 if [ $? -ne 0 ]; then
-    echo "Publish failed!"
+    echo "Publish wwiv3270 failed!"
     exit 1
 fi
 
+echo "[5/5] Publishing AOT self-contained binary for Linux (wwivsetup)..."
+
+dotnet publish wwivsetup/wwivsetup.vbproj \
+    -c "$CONFIGURATION" \
+    -r "$RUNTIME_ID" \
+    --self-contained \
+    -p:PublishAot=true \
+    -p:PublishTrimmed=true \
+    -p:PublishSingleFile=false \
+    -o "$OUTPUT_PATH"
+
+if [ $? -ne 0 ]; then
+    echo "Publish wwivsetup failed!"
+    exit 1
+fi
 echo ""
 echo "═══════════════════════════════════════════════════════════"
 echo "  Build Complete!"
