@@ -51,32 +51,59 @@ Namespace WWIV.Screens
         End Sub
         
         Private Sub RenderTelnet(session As ISession)
+            session.ClearScreen()
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.BgRed) & " WWIV Sysop Menu ".PadRight(70) & Util.Ansi.Reset)
             session.WriteLine("")
-            session.WriteLine("╔══════════════════════════════════════════════════════════════════╗")
-            session.WriteLine("║                    WWIV Sysop Menu                               ║")
-            session.WriteLine("╚══════════════════════════════════════════════════════════════════╝")
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Green) & "  [U] User Editor" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Green) & "  [S] System Configuration" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Green) & "  [L] View System Log" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Green) & "  [V] Validation Queue" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Green) & "  [I] System Information" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Green) & "  [B] Board/Sub Editor" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & "  [Q] Return to Main Menu" & Util.Ansi.Reset)
             session.WriteLine("")
-            session.WriteLine("  [U] User Editor")
-            session.WriteLine("  [S] System Configuration")
-            session.WriteLine("  [L] View System Log")
-            session.WriteLine("  [V] Validation Queue")
-            session.WriteLine("  [B] Bulletin Editor")
-            session.WriteLine("  [Q] Return to Main Menu")
-            session.WriteLine("")
-            session.Write("Command: ")
+            session.Write(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.Bold) & "Command: " & Util.Ansi.Reset)
         End Sub
         
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
             If TypeOf session Is TN3270SessionAdapter Then
                 HandleTN3270Input(DirectCast(session, TN3270SessionAdapter), DirectCast(input, AidKeyEventArgs))
+            ElseIf TypeOf input Is String Then
+                HandleTelnetInput(session, DirectCast(input, String))
             End If
+        End Sub
+
+        Private Sub HandleTelnetInput(session As ISession, input As String)
+            Dim cmd = input.Trim().ToUpper()
+            Select Case cmd
+                Case "U"
+                    session.NavigateTo(New UserEditorScreen())
+                Case "L"
+                    session.NavigateTo(New SystemLogScreen())
+                Case "S"
+                    session.NavigateTo(New SystemConfigScreen())
+                Case "I"
+                    session.NavigateTo(New SystemStatusScreen())
+                Case "B"
+                    session.NavigateTo(New SubBoardEditorScreen())
+                Case "Q"
+                    session.NavigateTo(New MainMenuScreen())
+                Case "V"
+                    session.WriteLine("Validation Queue not yet implemented.")
+                    RenderTelnet(session)
+                Case Else
+                    If Not String.IsNullOrEmpty(cmd) Then
+                        session.WriteLine("Invalid command.")
+                    End If
+                    RenderTelnet(session)
+            End Select
         End Sub
         
         Private Sub HandleTN3270Input(session As TN3270SessionAdapter, e As AidKeyEventArgs)
             Dim tn = session.TN3270Session
             
             Select Case e.AidKey
-                Case &H7D ' ENTER
+                Case AID.ENTER ' ENTER
                     Dim cmd = tn.GetFieldValue("command")?.Trim().ToUpper()
                     
                     Select Case cmd
@@ -107,7 +134,7 @@ Namespace WWIV.Screens
                             tn.ShowScreen(False)
                     End Select
                     
-                Case &HC3 ' PF3 - Return to main menu
+                Case AID.PF3 ' PF3 - Return to main menu
                     session.NavigateTo(New MainMenuScreen())
                 Case Else
                     RenderTN3270(session)

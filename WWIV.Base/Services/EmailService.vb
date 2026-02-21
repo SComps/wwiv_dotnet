@@ -3,9 +3,9 @@ Imports System.IO
 Imports System.Xml.Linq
 Imports System.Collections.Concurrent
 Imports System.Linq
-Imports wwiv3270.WWIV.Data
+Imports WWIV.Data
 
-Namespace WWIV.Services
+Namespace Services
     ''' <summary>
     ''' Service for managing local email messages using XML
     ''' </summary>

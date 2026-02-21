@@ -1,9 +1,10 @@
 Imports System
+Imports System.Text
 Imports TN3270Framework
 Imports wwiv3270.WWIV.Core
 Imports wwiv3270.WWIV.Adapters
-Imports wwiv3270.WWIV.Data
-Imports wwiv3270.WWIV.Services
+Imports WWIV.Data
+Imports WWIV.Services
 
 Namespace WWIV.Screens
     ''' <summary>
@@ -40,6 +41,8 @@ Namespace WWIV.Screens
             
             If TypeOf session Is TN3270SessionAdapter Then
                 RenderTN3270(DirectCast(session, TN3270SessionAdapter))
+            Else
+                RenderTelnet(session)
             End If
         End Sub
         
@@ -73,6 +76,68 @@ Namespace WWIV.Screens
             tn.ShowScreen(True)
         End Sub
         
+        Private Sub RenderTelnet(session As ISession)
+            Dim subBoard = _subBoards(_currentSubIdx)
+            session.ClearScreen()
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Cyan, Util.Ansi.BgBlue) & $" Message Board: {subBoard.Name} ".PadRight(70) & Util.Ansi.Reset)
+            session.WriteLine("")
+            
+            Select Case _viewMode
+                Case MessageViewMode.List
+                    RenderTelnetList(session)
+                Case MessageViewMode.Read
+                    RenderTelnetMessage(session)
+                Case MessageViewMode.Join
+                    RenderTelnetJoin(session)
+                Case MessageViewMode.Post
+                    RenderTelnetPost(session)
+            End Select
+        End Sub
+
+        Private Sub RenderTelnetList(session As ISession)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & " #   From                  Date       Subject" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & New String("-"c, 70) & Util.Ansi.Reset)
+            
+            If _messages.Count = 0 Then
+                session.WriteLine(Util.Ansi.Color(Util.Ansi.Yellow) & "(No messages)" & Util.Ansi.Reset)
+            Else
+                Dim startIdx = Math.Max(0, _messages.Count - 15)
+                For i = startIdx To _messages.Count - 1
+                    Dim msg = _messages(i)
+                    session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & (i + 1).ToString().PadLeft(3) & "  " & 
+                                     Util.Ansi.Color(Util.Ansi.Green) & msg.FromName.PadRight(20).Substring(0, 20) & "  " & 
+                                     Util.Ansi.Color(Util.Ansi.Cyan) & msg.DatePosted.ToString("MM/dd/yy") & "  " & 
+                                     Util.Ansi.Color(Util.Ansi.White) & msg.Title.PadRight(30).Substring(0, 30) & Util.Ansi.Reset)
+                Next
+            End If
+            session.WriteLine("")
+            session.Write(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.Bold) & "[#] Read, [P] Post, [J] Join, [Q] Quit: " & Util.Ansi.Reset)
+        End Sub
+
+        Private Sub RenderTelnetMessage(session As ISession)
+            Dim msg = _messages(_currentMessageIdx)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "From    : " & Util.Ansi.Reset & msg.FromName)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Date    : " & Util.Ansi.Reset & msg.DatePosted)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Subject : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Yellow) & msg.Title & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & New String("-"c, 70) & Util.Ansi.Reset)
+            session.WriteLine(msg.Text)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & New String("-"c, 70) & Util.Ansi.Reset)
+            session.Write(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.Bold) & "(ENTER) Next, (B) Back, (Q) Quit: " & Util.Ansi.Reset)
+        End Sub
+
+        Private Sub RenderTelnetJoin(session As ISession)
+            session.WriteLine("Select a Sub-Board to Join:")
+            For i = 0 To _subBoards.Count - 1
+                session.WriteLine($"  {i + 1}. {_subBoards(i).Name}")
+            Next
+            session.Write("Enter Sub # or (Q) to Cancel: ")
+        End Sub
+
+        Private Sub RenderTelnetPost(session As ISession)
+            session.WriteLine("Posting to: " & _subBoards(_currentSubIdx).Name)
+            session.Write("Subject: ")
+        End Sub
+
         Private Sub RenderList(tn As TN3270Session)
             tn.WriteText(3, 2, " #   From                  Date       Subject", TN3270Color.Turquoise)
             tn.WriteText(4, 2, New String("-"c, 76))
@@ -165,13 +230,115 @@ Namespace WWIV.Screens
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
             If TypeOf session Is TN3270SessionAdapter Then
                 HandleTN3270Input(DirectCast(session, TN3270SessionAdapter), DirectCast(input, AidKeyEventArgs))
+            ElseIf TypeOf input Is String Then
+                HandleTelnetInput(session, DirectCast(input, String))
+            End If
+        End Sub
+
+        Private _tempPostSubject As String = ""
+        Private _tempPostBody As New StringBuilder()
+
+        Private Sub HandleTelnetInput(session As ISession, input As String)
+            Dim cmd = input.Trim().ToUpper()
+
+            If _viewMode = MessageViewMode.Post Then
+                HandleTelnetPostInput(session, input)
+                Return
+            End If
+
+            If _viewMode = MessageViewMode.List Then
+                If Integer.TryParse(cmd, Nothing) Then
+                    _currentMessageIdx = Integer.Parse(cmd) - 1
+                    If _currentMessageIdx >= 0 AndAlso _currentMessageIdx < _messages.Count Then
+                        _viewMode = MessageViewMode.Read
+                    Else
+                        session.WriteLine("Invalid message number.")
+                    End If
+                Else
+                    Select Case cmd
+                        Case "Q"
+                            session.NavigateTo(New MainMenuScreen())
+                            Return
+                        Case "J"
+                            _viewMode = MessageViewMode.Join
+                        Case "P"
+                            _viewMode = MessageViewMode.Post
+                            _tempPostSubject = ""
+                            _tempPostBody.Clear()
+                        Case Else
+                            If Not String.IsNullOrEmpty(cmd) Then session.WriteLine("Invalid command.")
+                    End Select
+                End If
+            ElseIf _viewMode = MessageViewMode.Read Then
+                If String.IsNullOrEmpty(cmd) Then
+                    If _currentMessageIdx < _messages.Count - 1 Then
+                        _currentMessageIdx += 1
+                    Else
+                        session.WriteLine("End of messages.")
+                        _viewMode = MessageViewMode.List
+                    End If
+                Else
+                    Select Case cmd
+                        Case "B"
+                            _viewMode = MessageViewMode.List
+                        Case "Q"
+                            _viewMode = MessageViewMode.List
+                        Case Else
+                            session.WriteLine("Invalid command.")
+                    End Select
+                End If
+            ElseIf _viewMode = MessageViewMode.Join Then
+                If cmd = "Q" Then
+                    _viewMode = MessageViewMode.List
+                ElseIf Integer.TryParse(cmd, Nothing) Then
+                    Dim newIdx = Integer.Parse(cmd) - 1
+                    If newIdx >= 0 AndAlso newIdx < _subBoards.Count Then
+                        _currentSubIdx = newIdx
+                        _messages = _boardService.GetMessages(_subBoards(_currentSubIdx).Number)
+                        _viewMode = MessageViewMode.List
+                    Else
+                        session.WriteLine("Invalid sub number.")
+                    End If
+                End If
+            End If
+
+            RenderTelnet(session)
+        End Sub
+
+        Private Sub HandleTelnetPostInput(session As ISession, input As String)
+            If String.IsNullOrEmpty(_tempPostSubject) Then
+                _tempPostSubject = input.Trim()
+                If String.IsNullOrEmpty(_tempPostSubject) Then
+                    session.WriteLine("Subject required.")
+                    session.Write("Subject: ")
+                Else
+                    session.WriteLine("Enter message text (. on a line by itself to finish):")
+                End If
+            Else
+                If input.Trim() = "." Then
+                    ' Save the post
+                    Dim msg As New MessageHeader With {
+                        .Title = _tempPostSubject,
+                        .Text = _tempPostBody.ToString().Trim(),
+                        .FromName = If(session.User?.Name, "Unknown"),
+                        .FromUserNumber = If(session.User?.UserNumber, 0),
+                        .DatePosted = DateTime.Now
+                    }
+                    _boardService.AddMessage(_subBoards(_currentSubIdx).Number, msg)
+                    _messages = _boardService.GetMessages(_subBoards(_currentSubIdx).Number)
+                    _viewMode = MessageViewMode.List
+                    session.WriteLine("Post saved.")
+                    RenderTelnet(session)
+                Else
+                    _tempPostBody.AppendLine(input)
+                End If
             End If
         End Sub
         
         Private Sub HandleTN3270Input(session As TN3270SessionAdapter, e As AidKeyEventArgs)
             Dim tn = session.TN3270Session
             
-            If e.AidKey = &H7D Then ' ENTER
+            If e.AidKey = AID.ENTER Then ' ENTER
                 Dim cmd = tn.GetFieldValue("command")?.Trim().ToUpper()
                 
                 If _viewMode = MessageViewMode.List Then
@@ -233,7 +400,7 @@ Namespace WWIV.Screens
                 End If
                 
                 RenderTN3270(session)
-            ElseIf e.AidKey = &HC3 Then ' PF3
+            ElseIf e.AidKey = AID.PF3 Then ' PF3
                 If _viewMode = MessageViewMode.Post OrElse _viewMode = MessageViewMode.Join OrElse _viewMode = MessageViewMode.Read Then
                     _viewMode = MessageViewMode.List
                     RenderTN3270(session)

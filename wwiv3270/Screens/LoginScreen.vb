@@ -21,26 +21,30 @@ Namespace WWIV.Screens
 
         Private Sub RenderTN3270(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
+            tn.ClearFields()
+            Dim configService As New Global.WWIV.Services.ConfigService()
+            Dim bbsName = configService.Config.SystemName
             
             ' Title Bar
             tn.AddField(1, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
-            tn.WriteText(1, 30, "WWIV BBS Login", TN3270Color.Yellow, TN3270Color.Blue)
+            tn.WriteText(1, 30, $"{bbsName} Login", TN3270Color.Yellow, TN3270Color.Blue)
             
             ' Welcome Message
-            tn.WriteText(5, 10, "Welcome to WWIV Bulletin Board System")
+            tn.WriteText(5, 10, $"Welcome to {bbsName}")
             tn.WriteText(6, 10, "Recreated for 3270 Terminals")
             
             ' Login Fields
             tn.WriteText(10, 10, "User ID:")
-            tn.AddField(10, 20, 30, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "userid")
+            tn.AddField(10, 20, 30, " ".PadRight(30), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "userid")
             
             tn.WriteText(12, 10, "Password:")
-            Dim pwField = tn.AddField(12, 20, 30, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "password")
+            Dim pwField = tn.AddField(12, 20, 30, " ".PadRight(30), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "password")
             pwField.Intensity = TN3270Intensity.Hidden
             
             ' Instructions
-            tn.WriteText(16, 10, "Press ENTER to login", TN3270Color.Yellow)
-            tn.WriteText(17, 10, "Press PF3 to exit", TN3270Color.Yellow)
+            tn.WriteText(16, 10, "Type 'NEW' for a new account.", TN3270Color.Turquoise)
+            tn.WriteText(18, 10, "Press ENTER to login", TN3270Color.Yellow)
+            tn.WriteText(19, 10, "Press PF3 to exit", TN3270Color.Yellow)
             
             ' Status Bar
             tn.AddField(24, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
@@ -50,25 +54,34 @@ Namespace WWIV.Screens
         End Sub
 
         Private Sub RenderTelnet(session As ISession)
+            Dim configService As New Global.WWIV.Services.ConfigService()
+            Dim bbsName = configService.Config.SystemName
+            session.ClearScreen()
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Cyan, Util.Ansi.BgBlue) & $" {bbsName} ".PadRight(70) & Util.Ansi.Reset)
             session.WriteLine("")
-            session.WriteLine("╔══════════════════════════════════════════════════════════════════╗")
-            session.WriteLine("║              WWIV Bulletin Board System - Telnet                ║")
-            session.WriteLine("╚══════════════════════════════════════════════════════════════════╝")
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Yellow) & "Welcome to a New Generation of WWIV!" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & "--------------------------------------------------------------------" & Util.Ansi.Reset)
             session.WriteLine("")
-            session.Write("User ID: ")
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Green) & "(Type 'NEW' for a new account)" & Util.Ansi.Reset)
+            session.WriteLine("")
+            session.Write(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.Bold) & "User ID: " & Util.Ansi.Reset)
         End Sub
 
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
             If TypeOf session Is TN3270SessionAdapter Then
                 HandleTN3270Input(DirectCast(session, TN3270SessionAdapter), DirectCast(input, AidKeyEventArgs))
-            Else
-                HandleTelnetInput(session, CStr(input))
+            ElseIf TypeOf input Is String Then
+                HandleTelnetInput(session, DirectCast(input, String))
             End If
         End Sub
 
         Private Sub HandleTelnetInput(session As ISession, input As String)
             If _telnetState = 0 Then
                 _telnetUserId = input.Trim()
+                If String.IsNullOrEmpty(_telnetUserId) Then
+                    RenderTelnet(session)
+                    Return
+                End If
                 If _telnetUserId.ToUpper() = "NEW" Then
                     session.NavigateTo(New NewUserScreen())
                     Return
@@ -83,7 +96,7 @@ Namespace WWIV.Screens
                 Else
                     session.WriteLine("Invalid login.")
                     _telnetState = 0
-                    session.Write("User ID: ")
+                    RenderTelnet(session)
                 End If
             End If
         End Sub
@@ -93,53 +106,44 @@ Namespace WWIV.Screens
             
             ' Check which AID key was pressed
             Select Case e.AidKey
-                Case &H7D ' ENTER key
-                    Dim userId = tn.GetFieldValue("userid")
-                    Dim password = tn.GetFieldValue("password")
-                    
-                    Console.WriteLine($"Login attempt: User={userId}, Pass={If(String.IsNullOrEmpty(password), "(empty)", "***")}")
+                Case AID.ENTER ' ENTER key
+                    Dim userId = tn.GetFieldValue("userid")?.Trim()
+                    Dim password = tn.GetFieldValue("password")?.Trim()
                     
                     ' Check for NEW user registration
-                    If userId?.Trim().ToUpper() = "NEW" Then
+                    If userId?.ToUpper() = "NEW" Then
                         session.NavigateTo(New NewUserScreen())
                         Return
                     End If
 
                     If ValidateLogin(userId, password, session) Then
-                        ' Navigate to Main Menu
-                        Console.WriteLine("Login successful!")
                         session.NavigateTo(New MainMenuScreen())
                     Else
                         ' Show error and redisplay
-                        tn.ClearFields()
                         RenderTN3270(session)
-                        tn.WriteText(20, 10, "Invalid login. Please try again.", TN3270Color.Red)
+                        tn.WriteText(22, 10, "Invalid login. Please try again.", TN3270Color.Red)
                         tn.ShowScreen(False)
                     End If
                     
-                Case &HC3 ' PF3 - Exit
+                Case AID.PF3 ' PF3 - Exit
                     session.Disconnect()
                     
                 Case Else
-                    Console.WriteLine($"Unhandled AID key: {e.AidKey:X2}")
+                    RenderTN3270(session)
             End Select
         End Sub
 
         Private Function ValidateLogin(userId As String, password As String, session As ISession) As Boolean
-            ' Use UserService to find and validate user
-            Dim userService As New Services.UserService()
+            If String.IsNullOrEmpty(userId) Then Return False
+            
+            Dim userService As New Global.WWIV.Services.UserService()
             Dim user = userService.ValidateCredentials(userId, password)
             
             If user Is Nothing Then
-                Console.WriteLine($"Login failed for user '{userId}'.")
                 Return False
             End If
             
-            ' Update session with user data
             session.User = user
-            
-            Console.WriteLine($"User #{user.UserNumber} ({user.Name.Trim()}) logged in successfully via {If(TypeOf session Is TN3270SessionAdapter, "TN3270", "Telnet")}.")
-            
             Return True
         End Function
     End Class

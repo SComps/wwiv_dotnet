@@ -2,8 +2,8 @@ Imports System
 Imports TN3270Framework
 Imports wwiv3270.WWIV.Core
 Imports wwiv3270.WWIV.Adapters
-Imports wwiv3270.WWIV.Data
-Imports wwiv3270.WWIV.Services
+Imports WWIV.Data
+Imports WWIV.Services
 
 Namespace WWIV.Screens
     ''' <summary>
@@ -36,6 +36,7 @@ Namespace WWIV.Screens
         
         Private Sub RenderTN3270(session As TN3270SessionAdapter)
             Dim tn = session.TN3270Session
+            tn.ClearFields()
             
             ' Title Bar
             tn.AddField(1, 1, 80, "".PadRight(80), True, TN3270Color.White, TN3270Color.Blue)
@@ -75,7 +76,7 @@ Namespace WWIV.Screens
             End If
             
             ' Status Row / Command Row
-            tn.WriteText(21, 1, New String("═"c, 80), TN3270Color.Blue)
+            tn.WriteText(21, 1, New String("-"c, 80), TN3270Color.Blue)
             
             ' Edit Panel (if in edit mode)
             If _editMode AndAlso _selectedIndex >= 0 AndAlso _selectedIndex < _userList.Count Then
@@ -85,25 +86,25 @@ Namespace WWIV.Screens
                 Select Case _editField
                     Case "sl"
                         tn.WriteText(22, 40, "Security Level (0-255):")
-                        tn.AddField(22, 63, 3, user.SecurityLevel.ToString(), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
+                        tn.AddField(22, 63, 3, user.SecurityLevel.ToString().PadRight(3), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
                     Case "dsl"
                         tn.WriteText(22, 40, "DL Security (0-255)  :")
-                        tn.AddField(22, 63, 3, user.DownloadSecurityLevel.ToString(), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
+                        tn.AddField(22, 63, 3, user.DownloadSecurityLevel.ToString().PadRight(3), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
                     Case "note"
                         tn.WriteText(22, 35, "Note:")
-                        tn.AddField(22, 41, 35, user.Note.Trim(), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
+                        tn.AddField(22, 41, 35, user.Note.Trim().PadRight(35), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
                     Case "delete"
                         If user.UserNumber = 1 Then
                             tn.WriteText(22, 40, "CANNOT DELETE USER #1!", TN3270Color.Red)
                         Else
                             tn.WriteText(22, 40, "Delete user? (Y/N):")
-                            tn.AddField(22, 61, 1, "", False, TN3270Color.Red, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
+                            tn.AddField(22, 61, 1, " ", False, TN3270Color.Red, TN3270Color.Neutral, TN3270Highlight.Underline, "editvalue")
                         End If
                 End Select
             Else
                 ' Command Line when not in edit mode
                 tn.WriteText(22, 2, "Command / Jump to User # / Search Name:", TN3270Color.Yellow)
-                tn.AddField(22, 42, 30, "", False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
+                tn.AddField(22, 42, 30, " ".PadRight(30), False, TN3270Color.Green, TN3270Color.Neutral, TN3270Highlight.Underline, "command")
             End If
             
             ' Status Bar
@@ -115,26 +116,121 @@ Namespace WWIV.Screens
         End Sub
         
         Private Sub RenderTelnet(session As ISession)
+            session.ClearScreen()
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Cyan, Util.Ansi.BgBlue) & " WWIV User Editor ".PadRight(80) & Util.Ansi.Reset)
             session.WriteLine("")
-            session.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗")
-            session.WriteLine("║                          WWIV User Editor                                    ║")
-            session.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝")
-            session.WriteLine("")
-            session.WriteLine("Num   Name                            Real Name             SL  Logons  Last On")
-            session.WriteLine("────  ──────────────────────────────  ────────────────────  ──  ──────  ────────")
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Num   Name                            Real Name             SL  Logons  Last On" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & "----  ------------------------------  --------------------  --  ------  --------" & Util.Ansi.Reset)
             
-            For Each user In _userList
-                session.WriteLine($"{user.UserNumber,4}  {user.Name.Trim(),-30}  {user.RealName.Trim(),-20}  {user.SecurityLevel,3}  {user.TotalLogons,6}  {user.LastLogon.ToString("MM/dd/yy")}")
+            ' Show around 10-15 users centered on _selectedIndex
+            Dim startIdx = Math.Max(0, _selectedIndex - 5)
+            Dim endIdx = Math.Min(_userList.Count - 1, startIdx + 11)
+            
+            For i = startIdx To endIdx
+                Dim user = _userList(i)
+                Dim isSelected = (i = _selectedIndex)
+                Dim line = $"{user.UserNumber,3}  {user.Name.Trim().PadRight(30).Substring(0, 30)}  {user.RealName.Trim().PadRight(20).Substring(0, 20)}  {user.SecurityLevel,2}  {user.TotalLogons,6}  {user.LastLogon.ToString("MM/dd/yy")}"
+                
+                If isSelected Then
+                    session.WriteLine(Util.Ansi.Reverse & ">" & line & Util.Ansi.Reset)
+                Else
+                    session.WriteLine(" " & line)
+                End If
             Next
             
             session.WriteLine("")
-            session.WriteLine("Commands: [Q]uit")
+            If _editMode Then
+                Dim user = _userList(_selectedIndex)
+                Select Case _editField
+                    Case "sl" : session.Write(Util.Ansi.Color(Util.Ansi.Yellow) & $"Security Level (0-255) [{user.SecurityLevel}]: " & Util.Ansi.Reset)
+                    Case "dsl" : session.Write(Util.Ansi.Color(Util.Ansi.Yellow) & $"DL Security (0-255) [{user.DownloadSecurityLevel}]: " & Util.Ansi.Reset)
+                    Case "note" : session.Write(Util.Ansi.Color(Util.Ansi.Yellow) & $"Note [{user.Note.Trim()}]: " & Util.Ansi.Reset)
+                    Case "delete" : session.Write(Util.Ansi.Color(Util.Ansi.Red, Util.Ansi.Bold) & $"Delete user #{user.UserNumber}? (Y/N): " & Util.Ansi.Reset)
+                End Select
+            Else
+                session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & "Commands: [N]ext, [B]ack, [E]dsl, [D]sl, [T]note, [X]delete, [Q]uit" & Util.Ansi.Reset)
+                session.Write(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.Bold) & "Command or Search: " & Util.Ansi.Reset)
+            End If
         End Sub
         
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
             If TypeOf session Is TN3270SessionAdapter Then
                 HandleTN3270Input(DirectCast(session, TN3270SessionAdapter), DirectCast(input, AidKeyEventArgs))
+            ElseIf TypeOf input Is String Then
+                HandleTelnetInput(session, DirectCast(input, String))
             End If
+        End Sub
+
+        Private Sub HandleTelnetInput(session As ISession, input As String)
+            Dim cmd = input.Trim()
+            
+            If _editMode Then
+                HandleTelnetEditInput(session, cmd)
+                Return
+            End If
+
+            Select Case cmd.ToUpper()
+                Case "Q"
+                    session.NavigateTo(New SysopMenuScreen())
+                    Return
+                Case "N"
+                    If _selectedIndex < _userList.Count - 1 Then _selectedIndex += 1
+                Case "B"
+                    If _selectedIndex > 0 Then _selectedIndex -= 1
+                Case "E"
+                    _editMode = True : _editField = "sl"
+                Case "D"
+                    _editMode = True : _editField = "dsl"
+                Case "T"
+                    _editMode = True : _editField = "note"
+                Case "X"
+                    _editMode = True : _editField = "delete"
+                Case Else
+                    If Not String.IsNullOrEmpty(cmd) Then
+                        ProcessCommand(cmd)
+                    End If
+            End Select
+            
+            RenderTelnet(session)
+        End Sub
+
+        Private Sub HandleTelnetEditInput(session As ISession, input As String)
+            Dim user = _userList(_selectedIndex)
+            
+            Select Case _editField
+                Case "sl"
+                    Dim sl As Integer
+                    If Integer.TryParse(input, sl) AndAlso sl >= 0 AndAlso sl <= 255 Then
+                        user.SecurityLevel = sl
+                        _userService.SaveUser(user)
+                        session.WriteLine("SL updated.")
+                    ElseIf Not String.IsNullOrEmpty(input) Then
+                        session.WriteLine("Invalid SL.")
+                    End If
+                Case "dsl"
+                    Dim dsl As Integer
+                    If Integer.TryParse(input, dsl) AndAlso dsl >= 0 AndAlso dsl <= 255 Then
+                        user.DownloadSecurityLevel = dsl
+                        _userService.SaveUser(user)
+                        session.WriteLine("DSL updated.")
+                    ElseIf Not String.IsNullOrEmpty(input) Then
+                        session.WriteLine("Invalid DSL.")
+                    End If
+                Case "note"
+                    user.Note = input
+                    _userService.SaveUser(user)
+                    session.WriteLine("Note updated.")
+                Case "delete"
+                    If input.ToUpper() = "Y" AndAlso user.UserNumber <> 1 Then
+                        _userService.DeleteUser(user.UserNumber)
+                        _userList.RemoveAt(_selectedIndex)
+                        If _selectedIndex >= _userList.Count Then _selectedIndex = Math.Max(0, _userList.Count - 1)
+                        session.WriteLine("User deleted.")
+                    End If
+            End Select
+            
+            _editMode = False
+            RenderTelnet(session)
         End Sub
         
         Private Sub HandleTN3270Input(session As TN3270SessionAdapter, e As AidKeyEventArgs)
@@ -143,52 +239,48 @@ Namespace WWIV.Screens
             If _editMode Then
                 ' Handle edit mode input
                 Select Case e.AidKey
-                    Case &H7D ' ENTER - Save
+                    Case AID.ENTER ' ENTER - Save
                         SaveEdit(session, tn)
                         _editMode = False
-                        tn.ClearFields()
                         RenderTN3270(session)
                         
-                    Case &HC3 ' PF3 - Cancel
+                    Case AID.PF3 ' PF3 - Cancel
                         _editMode = False
-                        tn.ClearFields()
+                        RenderTN3270(session)
+                    Case Else
                         RenderTN3270(session)
                 End Select
             Else
                 ' Handle navigation mode input
                 Select Case e.AidKey
-                    Case &H7D ' ENTER - Proccess Command
+                    Case AID.ENTER ' ENTER - Proccess Command
                         Dim cmd = tn.GetFieldValue("command")?.Trim()
                         If Not String.IsNullOrEmpty(cmd) Then
-                            ProcessCommand(session, cmd)
+                            ProcessCommand(cmd)
                         Else
                             ' Default ENTER action could be "Edit"
                         End If
-                        tn.ClearFields()
                         RenderTN3270(session)
 
-                    Case &HF1 ' PF1 - Up
+                    Case AID.PF1 ' PF1 - Up
                         If _selectedIndex > 0 Then
                             _selectedIndex -= 1
-                            tn.ClearFields()
                             RenderTN3270(session)
                         End If
                         
-                    Case &HF2 ' PF2 - Down
+                    Case AID.PF2 ' PF2 - Down
                         If _selectedIndex < _userList.Count - 1 Then
                             _selectedIndex += 1
-                            tn.ClearFields()
                             RenderTN3270(session)
                         End If
                         
-                    Case &HC3 ' PF3 - Quit
+                    Case AID.PF3 ' PF3 - Quit
                         session.NavigateTo(New SysopMenuScreen())
                         
                     Case &H85, &HC5 ' E - Edit SL
                         If _userList.Count > 0 Then
                             _editMode = True
                             _editField = "sl"
-                            tn.ClearFields()
                             RenderTN3270(session)
                         End If
                         
@@ -196,7 +288,6 @@ Namespace WWIV.Screens
                         If _userList.Count > 0 Then
                             _editMode = True
                             _editField = "dsl"
-                            tn.ClearFields()
                             RenderTN3270(session)
                         End If
 
@@ -204,7 +295,6 @@ Namespace WWIV.Screens
                         If _userList.Count > 0 Then
                             _editMode = True
                             _editField = "note"
-                            tn.ClearFields()
                             RenderTN3270(session)
                         End If
 
@@ -212,14 +302,15 @@ Namespace WWIV.Screens
                         If _userList.Count > 0 Then
                             _editMode = True
                             _editField = "delete"
-                            tn.ClearFields()
                             RenderTN3270(session)
                         End If
+                    Case Else
+                        RenderTN3270(session)
                 End Select
             End If
         End Sub
 
-        Private Sub ProcessCommand(session As TN3270SessionAdapter, cmd As String)
+        Private Sub ProcessCommand(cmd As String)
             ' Check if numeric (Jump to user #)
             Dim userNum As Integer
             If Integer.TryParse(cmd, userNum) Then
@@ -228,17 +319,6 @@ Namespace WWIV.Screens
                     _selectedIndex = idx
                 End If
                 Return
-            End If
-
-            ' Check for single character commands if they were typed in the field
-            If cmd.Length = 1 Then
-                Select Case cmd.ToUpper()
-                    Case "E" : _editMode = True : _editField = "sl" : Return
-                    Case "D" : _editMode = True : _editField = "dsl" : Return
-                    Case "N" : _editMode = True : _editField = "note" : Return
-                    Case "X" : _editMode = True : _editField = "delete" : Return
-                    Case "Q" : session.NavigateTo(New SysopMenuScreen()) : Return
-                End Select
             End If
 
             ' Search by name
@@ -260,7 +340,6 @@ Namespace WWIV.Screens
                     If Integer.TryParse(value, sl) AndAlso sl >= 0 AndAlso sl <= 255 Then
                         user.SecurityLevel = sl
                         _userService.SaveUser(user)
-                        Logger.Log($"Updated user #{user.UserNumber} SL to {sl}")
                     End If
                     
                 Case "dsl"
@@ -268,13 +347,11 @@ Namespace WWIV.Screens
                     If Integer.TryParse(value, dsl) AndAlso dsl >= 0 AndAlso dsl <= 255 Then
                         user.DownloadSecurityLevel = dsl
                         _userService.SaveUser(user)
-                        Logger.Log($"Updated user #{user.UserNumber} DSL to {dsl}")
                     End If
                     
                 Case "note"
                     user.Note = value
                     _userService.SaveUser(user)
-                    Logger.Log($"Updated user #{user.UserNumber} note.")
 
                 Case "delete"
                     If value?.ToUpper() = "Y" AndAlso user.UserNumber <> 1 Then
@@ -283,7 +360,6 @@ Namespace WWIV.Screens
                         If _selectedIndex >= _userList.Count Then
                             _selectedIndex = Math.Max(0, _userList.Count - 1)
                         End If
-                        Logger.Log($"Deleted user #{user.UserNumber}")
                     End If
             End Select
         End Sub

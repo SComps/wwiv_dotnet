@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>WWIV</RootNamespace>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+</Project>

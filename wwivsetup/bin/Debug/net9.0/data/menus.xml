@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Menus>
+  <MenuDefinition>
+    <Id>Main</Id>
+    <Title>Main Menu</Title>
+    <Items>
+      <MenuItem>
+        <Key>E</Key>
+        <Description>Email</Description>
+        <Action>Email</Action>
+        <MinSecurityLevel>0</MinSecurityLevel>
+      </MenuItem>
+      <MenuItem>
+        <Key>G</Key>
+        <Description>Goodbye (Logoff)</Description>
+        <Action>Logoff</Action>
+        <MinSecurityLevel>0</MinSecurityLevel>
+      </MenuItem>
+      <MenuItem>
+        <Key>M</Key>
+        <Description>Read Messages</Description>
+        <Action>ReadMessages</Action>
+        <MinSecurityLevel>0</MinSecurityLevel>
+      </MenuItem>
+      <MenuItem>
+        <Key>P</Key>
+        <Description>Post Message</Description>
+        <Action>PostMessage</Action>
+        <MinSecurityLevel>0</MinSecurityLevel>
+      </MenuItem>
+      <MenuItem>
+        <Key>U</Key>
+        <Description>User List</Description>
+        <Action>UserList</Action>
+        <MinSecurityLevel>0</MinSecurityLevel>
+      </MenuItem>
+      <MenuItem>
+        <Key>X</Key>
+        <Description>File Transfer</Description>
+        <Action>FileTransfer</Action>
+        <MinSecurityLevel>0</MinSecurityLevel>
+      </MenuItem>
+      <MenuItem>
+        <Key>Y</Key>
+        <Description>Your Settings</Description>
+        <Action>Settings</Action>
+        <MinSecurityLevel>0</MinSecurityLevel>
+      </MenuItem>
+      <MenuItem>
+        <Key>//</Key>
+        <Description>Sysop Menu</Description>
+        <Action>SysopMenu</Action>
+        <MinSecurityLevel>100</MinSecurityLevel>
+      </MenuItem>
+      <MenuItem>
+        <Key>?</Key>
+        <Description>Help</Description>
+        <Action>Help</Action>
+        <MinSecurityLevel>0</MinSecurityLevel>
+      </MenuItem>
+    </Items>
+  </MenuDefinition>
+</Menus>

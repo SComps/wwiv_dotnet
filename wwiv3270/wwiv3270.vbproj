@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TN3270Framework\TN3270Framework.vbproj" />
+    <ProjectReference Include="..\WWIV.Base\WWIV.Base.vbproj" />
   </ItemGroup>
 
 </Project>

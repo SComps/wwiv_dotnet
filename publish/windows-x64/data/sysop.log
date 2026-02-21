@@ -55,3 +55,40 @@
 02/15/26 12:11:39 - TN3270 Listener started on port 2323
 02/15/26 12:11:39 - Telnet Listener started on port 23
 02/15/26 12:11:39 - System is Running. Press Ctrl+C to stop.
+02/15/26 12:28:12 - Initializing WWIV 3270 System...
+02/15/26 12:28:12 - System Name: HOLY COW A BBS!
+02/15/26 12:28:12 - TN3270 Listener started on port 2323
+02/15/26 12:28:12 - Telnet Listener started on port 23
+02/15/26 12:28:12 - System is Running. Press Ctrl+C to stop.
+02/15/26 12:29:18 - New TN3270 connection from 127.0.0.1:53717
+02/15/26 12:29:18 - Negotiation Complete for 127.0.0.1:53717. Show Login Screen.
+02/15/26 12:30:17 - Session 1ac369a8-3343-4a41-9a0e-85e08a910531 disconnected.
+02/15/26 12:30:20 - New TN3270 connection from 127.0.0.1:53727
+02/15/26 12:30:20 - Negotiation Complete for 127.0.0.1:53727. Show Login Screen.
+02/15/26 12:30:24 - Session 65b21b76-ce50-4556-b614-89569e1cd10c disconnected.
+02/15/26 12:35:06 - Initializing WWIV 3270 System...
+02/15/26 12:35:06 - System Name: HOLY COW A BBS!
+02/15/26 12:35:06 - TN3270 Listener started on port 2323
+02/15/26 12:35:06 - Telnet Listener started on port 23
+02/15/26 12:35:06 - System is Running. Press Ctrl+C to stop.
+02/15/26 12:35:17 - New TN3270 connection from 127.0.0.1:58108
+02/15/26 12:35:17 - Negotiation Complete for 127.0.0.1:58108. Show Login Screen.
+02/15/26 12:36:32 - Session 085bc791-eb1a-4fa5-b2a0-7c33d9b48977 disconnected.
+02/15/26 12:36:34 - New TN3270 connection from 127.0.0.1:58123
+02/15/26 12:36:34 - Negotiation Complete for 127.0.0.1:58123. Show Login Screen.
+02/15/26 12:36:37 - Session 255a4e35-9c35-49f9-96e7-dbc94e507858 disconnected.
+02/15/26 12:39:29 - Initializing WWIV 3270 System...
+02/15/26 12:39:29 - System Name: HOLY COW A BBS!
+02/15/26 12:39:29 - TN3270 Listener started on port 2323
+02/15/26 12:39:29 - Telnet Listener started on port 23
+02/15/26 12:39:29 - System is Running. Press Ctrl+C to stop.
+02/15/26 12:39:48 - New TN3270 connection from 127.0.0.1:58170
+02/15/26 12:39:48 - Negotiation Complete for 127.0.0.1:58170. Show Login Screen.
+02/15/26 12:44:03 - Telnet session 6c3d6486-ef4f-4b2c-84fa-6798dc8cb0d3 closed.
+02/15/26 12:47:55 - Session 0dbe6da4-7d85-42d2-9ff5-ed210ef060f2 disconnected.
+02/15/26 16:40:03 - New TN3270 connection from 127.0.0.1:56381
+02/15/26 16:40:03 - Negotiation Complete for 127.0.0.1:56381. Show Login Screen.
+02/15/26 16:41:33 - Session fa156cf3-9ce2-49d2-8a8a-1dd98cfbafd9 disconnected.
+02/15/26 16:41:35 - New TN3270 connection from 127.0.0.1:56385
+02/15/26 16:41:35 - Negotiation Complete for 127.0.0.1:56385. Show Login Screen.
+02/15/26 16:41:38 - Session 114e942f-5f7d-4fb9-a487-3bc6672151ec disconnected.

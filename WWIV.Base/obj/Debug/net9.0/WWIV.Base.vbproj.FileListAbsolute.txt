@@ -1,0 +1,12 @@
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\WWIV.Base.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\WWIV.Base.AssemblyInfoInputs.cache
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\WWIV.Base.AssemblyInfo.vb
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\WWIV.Base.vbproj.CoreCompileInputs.cache
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\WWIV.Base.sourcelink.json
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\bin\Debug\net9.0\WWIV.Base.deps.json
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\bin\Debug\net9.0\WWIV.Base.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\bin\Debug\net9.0\WWIV.Base.pdb
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\WWIV.Base.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\refint\WWIV.Base.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\WWIV.Base.pdb
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\WWIV.Base\obj\Debug\net9.0\ref\WWIV.Base.dll

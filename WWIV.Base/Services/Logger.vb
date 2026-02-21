@@ -1,7 +1,9 @@
 Imports System
 Imports System.IO
+Imports System.Collections.Generic
+Imports System.Linq
 
-Namespace WWIV.Services
+Namespace Services
     ''' <summary>
     ''' System logging service
     ''' </summary>

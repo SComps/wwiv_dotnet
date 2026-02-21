@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Config>
+  <SystemName>WWIV BBS</SystemName>
+  <SysopName>SYSOP</SysopName>
+  <SystemPhone></SystemPhone>
+  <NewUserPassword></NewUserPassword>
+  <MaxUsers>10000</MaxUsers>
+  <ClosedSystem>false</ClosedSystem>
+  <NewUserSecurityLevel>10</NewUserSecurityLevel>
+  <NewUserDownloadLevel>10</NewUserDownloadLevel>
+  <NewUserRestrictions>0</NewUserRestrictions>
+  <DataDirectory>data</DataDirectory>
+  <MessagesDirectory>msgs</MessagesDirectory>
+  <FilesDirectory>files</FilesDirectory>
+  <TN3270Port>2323</TN3270Port>
+  <TelnetPort>23</TelnetPort>
+</Config>

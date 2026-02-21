@@ -48,6 +48,16 @@
         "runtime": {
           "bin/placeholder/TN3270Framework.dll": {}
         }
+      },
+      "WWIV.Base/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/WWIV.Base.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/WWIV.Base.dll": {}
+        }
       }
     },
     "net9.0/win-x64": {
@@ -96,6 +106,16 @@
         },
         "runtime": {
           "bin/placeholder/TN3270Framework.dll": {}
+        }
+      },
+      "WWIV.Base/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/WWIV.Base.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/WWIV.Base.dll": {}
         }
       }
     }
@@ -656,13 +676,19 @@
       "type": "project",
       "path": "../TN3270Framework/TN3270Framework.vbproj",
       "msbuildProject": "../TN3270Framework/TN3270Framework.vbproj"
+    },
+    "WWIV.Base/1.0.0": {
+      "type": "project",
+      "path": "../WWIV.Base/WWIV.Base.vbproj",
+      "msbuildProject": "../WWIV.Base/WWIV.Base.vbproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
       "Microsoft.DotNet.ILCompiler >= 9.0.13",
       "Microsoft.NET.ILLink.Tasks >= 9.0.13",
-      "TN3270Framework >= 1.0.0"
+      "TN3270Framework >= 1.0.0",
+      "WWIV.Base >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -700,6 +726,9 @@
           "projectReferences": {
             "C:\\Users\\Scott\\.gemini\\antigravity\\scratch\\wwiv3270\\TN3270Framework\\TN3270Framework.vbproj": {
               "projectPath": "C:\\Users\\Scott\\.gemini\\antigravity\\scratch\\wwiv3270\\TN3270Framework\\TN3270Framework.vbproj"
+            },
+            "C:\\Users\\Scott\\.gemini\\antigravity\\scratch\\wwiv3270\\WWIV.Base\\WWIV.Base.vbproj": {
+              "projectPath": "C:\\Users\\Scott\\.gemini\\antigravity\\scratch\\wwiv3270\\WWIV.Base\\WWIV.Base.vbproj"
             }
           }
         }

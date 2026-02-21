@@ -1,7 +1,7 @@
 Imports System
 Imports TN3270Framework
 Imports wwiv3270.WWIV.Core
-Imports wwiv3270.WWIV.Data
+Imports WWIV.Data
 
 Namespace WWIV.Adapters
     Public Class TN3270SessionAdapter
@@ -71,6 +71,10 @@ Namespace WWIV.Adapters
             Write(text) 
             ' 3270 doesn't really have "lines" in a stream sense. 
             ' We might need a virtual console implementation later.
+        End Sub
+
+        Public Sub ClearScreen() Implements ISession.ClearScreen
+            _tnSession.ClearFields()
         End Sub
 
         Public Sub NavigateTo(screen As IScreen) Implements ISession.NavigateTo

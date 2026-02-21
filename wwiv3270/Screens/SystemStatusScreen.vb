@@ -2,8 +2,8 @@ Imports System
 Imports TN3270Framework
 Imports wwiv3270.WWIV.Core
 Imports wwiv3270.WWIV.Adapters
-Imports wwiv3270.WWIV.Data
-Imports wwiv3270.WWIV.Services
+Imports WWIV.Data
+Imports WWIV.Services
 
 Namespace WWIV.Screens
     ''' <summary>
@@ -22,6 +22,8 @@ Namespace WWIV.Screens
         Public Sub Activate(session As ISession) Implements IScreen.Activate
             If TypeOf session Is TN3270SessionAdapter Then
                 RenderTN3270(DirectCast(session, TN3270SessionAdapter))
+            Else
+                RenderTelnet(session)
             End If
         End Sub
         
@@ -75,11 +77,27 @@ Namespace WWIV.Screens
             
             tn.ShowScreen(True)
         End Sub
+
+        Private Sub RenderTelnet(session As ISession)
+            Dim status = _configService.Status
+            session.ClearScreen()
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.BgRed) & " WWIV System Status ".PadRight(70) & Util.Ansi.Reset)
+            session.WriteLine("")
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Calls Today   : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Green) & status.CallsToday & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Total Calls   : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Green) & status.TotalCalls & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Posts Today   : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.White) & status.PostsToday & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Total Posts   : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.White) & status.TotalPosts & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Emails Today  : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Yellow) & status.EmailToday & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Total Emails  : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Yellow) & status.TotalEmail & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Active Users  : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Turquoise) & status.ActiveUsers & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Total Users   : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Turquoise) & status.TotalUsers & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "System Date   : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Magenta) & status.DateUpdated.ToLongDateString() & Util.Ansi.Reset)
+            session.WriteLine("")
+            session.Write(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.Bold) & "(Press ENTER to Return)" & Util.Ansi.Reset)
+        End Sub
         
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
-            If TypeOf session Is TN3270SessionAdapter Then
-                session.NavigateTo(New SysopMenuScreen())
-            End If
+            session.NavigateTo(New SysopMenuScreen())
         End Sub
     End Class
 End Namespace

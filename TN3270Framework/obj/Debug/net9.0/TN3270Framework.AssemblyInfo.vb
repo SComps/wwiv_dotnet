@@ -16,7 +16,7 @@ Imports System.Reflection
  Assembly: System.Reflection.AssemblyCompanyAttribute("TN3270Framework"),  _
  Assembly: System.Reflection.AssemblyConfigurationAttribute("Debug"),  _
  Assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0"),  _
- Assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1159b1db79eb2c131087927270b6ae40b0c0f950"),  _
+ Assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+96eab49f568eaa81ef331f7f2b8e2b6fc79d0a8d"),  _
  Assembly: System.Reflection.AssemblyProductAttribute("TN3270Framework"),  _
  Assembly: System.Reflection.AssemblyTitleAttribute("TN3270Framework"),  _
  Assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")> 

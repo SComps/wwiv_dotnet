@@ -719,6 +719,23 @@ Public Class StructuredFieldEventArgs
     End Sub
 End Class
 
+Public Class AID
+    Public Const ENTER As Byte = &H7D
+    Public Const PF1 As Byte = &HF1
+    Public Const PF2 As Byte = &HF2
+    Public Const PF3 As Byte = &HF3
+    Public Const PF4 As Byte = &HF4
+    Public Const PF5 As Byte = &HF5
+    Public Const PF6 As Byte = &HF6
+    Public Const PF7 As Byte = &HF7
+    Public Const PF8 As Byte = &HF8
+    Public Const PF9 As Byte = &HF9
+    Public Const PF10 As Byte = &H7A
+    Public Const PF11 As Byte = &H7B
+    Public Const PF12 As Byte = &H7C
+    Public Const CLEAR As Byte = &H6D
+End Class
+
 Public Class ORDER
     Public Const SBA As Byte = &H11 ' Set Buffer Address
     Public Const SF As Byte = &H1D  ' Start Field

@@ -2,9 +2,10 @@ Imports System
 Imports System.IO
 Imports System.Xml.Linq
 Imports System.Collections.Generic
-Imports wwiv3270.WWIV.Data
+Imports System.Linq
+Imports WWIV.Data
 
-Namespace WWIV.Services
+Namespace Services
     ''' <summary>
     ''' Service for managing user accounts using XML storage
     ''' AOT-compatible manual serialization

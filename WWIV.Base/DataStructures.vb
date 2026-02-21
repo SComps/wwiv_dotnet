@@ -3,7 +3,7 @@ Imports System.Xml.Linq
 Imports System.Collections.Generic
 Imports System.Linq
 
-Namespace WWIV.Data
+Namespace Data
     ''' <summary>
     ''' User record - AOT-compatible manual XML serialization
     ''' </summary>
@@ -227,6 +227,8 @@ Namespace WWIV.Data
         Public Property DataDirectory As String = "data"
         Public Property MessagesDirectory As String = "msgs"
         Public Property FilesDirectory As String = "files"
+        Public Property TN3270Port As Integer = 2323
+        Public Property TelnetPort As Integer = 23
 
         Public Function ToXml() As XElement
             Return New XElement("Config",
@@ -241,7 +243,9 @@ Namespace WWIV.Data
                 New XElement("NewUserRestrictions", NewUserRestrictions),
                 New XElement("DataDirectory", DataDirectory),
                 New XElement("MessagesDirectory", MessagesDirectory),
-                New XElement("FilesDirectory", FilesDirectory)
+                New XElement("FilesDirectory", FilesDirectory),
+                New XElement("TN3270Port", TN3270Port),
+                New XElement("TelnetPort", TelnetPort)
             )
         End Function
 
@@ -260,6 +264,8 @@ Namespace WWIV.Data
             cfg.DataDirectory = CStr(el.Element("DataDirectory"))
             cfg.MessagesDirectory = CStr(el.Element("MessagesDirectory"))
             cfg.FilesDirectory = CStr(el.Element("FilesDirectory"))
+            cfg.TN3270Port = If(el.Element("TN3270Port") IsNot Nothing, CInt(el.Element("TN3270Port")), 2323)
+            cfg.TelnetPort = If(el.Element("TelnetPort") IsNot Nothing, CInt(el.Element("TelnetPort")), 23)
             Return cfg
         End Function
     End Class
@@ -502,4 +508,66 @@ Namespace WWIV.Data
             Return root
         End Function
     End Class
+
+    Public Class MenuItem
+        Public Property Key As String = ""
+        Public Property Description As String = ""
+        Public Property Action As String = ""
+        Public Property MinSecurityLevel As Integer = 0
+
+        Public Function ToXml() As XElement
+            Return New XElement("MenuItem",
+                New XElement("Key", Key),
+                New XElement("Description", Description),
+                New XElement("Action", Action),
+                New XElement("MinSecurityLevel", MinSecurityLevel)
+            )
+        End Function
+
+        Public Shared Function FromXml(el As XElement) As MenuItem
+            Dim mi = New MenuItem()
+            If el Is Nothing Then Return mi
+            mi.Key = CStr(el.Element("Key"))
+            mi.Description = CStr(el.Element("Description"))
+            mi.Action = CStr(el.Element("Action"))
+            mi.MinSecurityLevel = CInt(el.Element("MinSecurityLevel"))
+            Return mi
+        End Function
+    End Class
+
+    Public Class MenuDefinition
+        Public Property Id As String = ""
+        Public Property Title As String = ""
+        Public Property Items As New List(Of MenuItem)()
+
+        Public Function ToXml() As XElement
+            Dim root = New XElement("MenuDefinition",
+                New XElement("Id", Id),
+                New XElement("Title", Title)
+            )
+            Dim itemsEl = New XElement("Items")
+            For Each item In Items
+                itemsEl.Add(item.ToXml())
+            Next
+            root.Add(itemsEl)
+            Return root
+        End Function
+
+        Public Shared Function FromXml(el As XElement) As MenuDefinition
+            Dim md = New MenuDefinition()
+            If el Is Nothing Then Return md
+            md.Id = CStr(el.Element("Id"))
+            md.Title = CStr(el.Element("Title"))
+            
+            Dim itemsEl = el.Element("Items")
+            If itemsEl IsNot Nothing Then
+                For Each itemEl In itemsEl.Elements("MenuItem")
+                    md.Items.Add(MenuItem.FromXml(itemEl))
+                Next
+            End If
+            
+            Return md
+        End Function
+    End Class
 End Namespace
+

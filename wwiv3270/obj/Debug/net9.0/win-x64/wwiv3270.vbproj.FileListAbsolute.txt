@@ -201,3 +201,5 @@ C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\wwiv3270\obj\Debug\net9.0\wi
 C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\wwiv3270\obj\Debug\net9.0\win-x64\wwiv3270.genruntimeconfig.cache
 C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\wwiv3270\obj\Debug\net9.0\win-x64\ref\wwiv3270.dll
 C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\wwiv3270\bin\Debug\net9.0\win-x64\mscordaccore_amd64_amd64_9.0.1326.6317.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\wwiv3270\bin\Debug\net9.0\win-x64\WWIV.Base.dll
+C:\Users\Scott\.gemini\antigravity\scratch\wwiv3270\wwiv3270\bin\Debug\net9.0\win-x64\WWIV.Base.pdb

@@ -1,9 +1,10 @@
 Imports System
+Imports System.Text
 Imports TN3270Framework
 Imports wwiv3270.WWIV.Core
 Imports wwiv3270.WWIV.Adapters
-Imports wwiv3270.WWIV.Data
-Imports wwiv3270.WWIV.Services
+Imports WWIV.Data
+Imports WWIV.Services
 
 Namespace WWIV.Screens
     ''' <summary>
@@ -35,6 +36,8 @@ Namespace WWIV.Screens
             
             If TypeOf session Is TN3270SessionAdapter Then
                 RenderTN3270(DirectCast(session, TN3270SessionAdapter))
+            Else
+                RenderTelnet(session)
             End If
         End Sub
         
@@ -66,6 +69,58 @@ Namespace WWIV.Screens
             tn.ShowScreen(True)
         End Sub
         
+        Private Sub RenderTelnet(session As ISession)
+            session.ClearScreen()
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Cyan, Util.Ansi.BgBlue) & " WWIV Local Email ".PadRight(70) & Util.Ansi.Reset)
+            session.WriteLine("")
+            
+            Select Case _viewMode
+                Case EmailViewMode.List
+                    RenderTelnetList(session)
+                Case EmailViewMode.Read
+                    RenderTelnetMessage(session)
+                Case EmailViewMode.Compose
+                    RenderTelnetCompose(session)
+            End Select
+        End Sub
+
+        Private Sub RenderTelnetList(session As ISession)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & " #   From                  Date       Subject" & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & New String("-"c, 70) & Util.Ansi.Reset)
+            
+            If _emails.Count = 0 Then
+                session.WriteLine(Util.Ansi.Color(Util.Ansi.Yellow) & "(Empty Mailbox)" & Util.Ansi.Reset)
+            Else
+                For i = 0 To _emails.Count - 1
+                    Dim msg = _emails(i)
+                    Dim status = If(msg.IsRead, " ", Util.Ansi.Color(Util.Ansi.Yellow, Util.Ansi.Bold) & "*" & Util.Ansi.Reset)
+                    session.WriteLine($"{status}{Util.Ansi.Color(Util.Ansi.White)}{(i + 1).ToString().PadLeft(3)}  " & 
+                                     Util.Ansi.Color(Util.Ansi.Green) & msg.FromName.PadRight(20).Substring(0, 20) & "  " & 
+                                     Util.Ansi.Color(Util.Ansi.Cyan) & msg.DatePosted.ToString("MM/dd/yy") & "  " & 
+                                     Util.Ansi.Color(Util.Ansi.White) & msg.Title & Util.Ansi.Reset)
+                Next
+            End If
+            session.WriteLine("")
+            session.Write(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.Bold) & "[#] Read, [S] Send, [Q] Quit: " & Util.Ansi.Reset)
+        End Sub
+
+        Private Sub RenderTelnetMessage(session As ISession)
+            Dim msg = _emails(_currentEmailIdx)
+            msg.IsRead = True
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "From    : " & Util.Ansi.Reset & msg.FromName)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Date    : " & Util.Ansi.Reset & msg.DatePosted)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.Turquoise) & "Subject : " & Util.Ansi.Reset & Util.Ansi.Color(Util.Ansi.Yellow) & msg.Title & Util.Ansi.Reset)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & New String("-"c, 70) & Util.Ansi.Reset)
+            session.WriteLine(msg.Text)
+            session.WriteLine(Util.Ansi.Color(Util.Ansi.White) & New String("-"c, 70) & Util.Ansi.Reset)
+            session.Write(Util.Ansi.Color(Util.Ansi.White, Util.Ansi.Bold) & "(ENTER) Next, (B) Back, (Q) Quit: " & Util.Ansi.Reset)
+        End Sub
+
+        Private Sub RenderTelnetCompose(session As ISession)
+            session.WriteLine("Compose Private Email")
+            session.Write("To (User # or Name): ")
+        End Sub
+
         Private Sub RenderList(tn As TN3270Session)
             tn.WriteText(3, 2, " #   From                  Date       Subject", TN3270Color.Turquoise)
             tn.WriteText(4, 2, New String("-"c, 76))
@@ -136,13 +191,126 @@ Namespace WWIV.Screens
         Public Sub HandleInput(session As ISession, input As Object) Implements IScreen.HandleInput
             If TypeOf session Is TN3270SessionAdapter Then
                 HandleTN3270Input(DirectCast(session, TN3270SessionAdapter), DirectCast(input, AidKeyEventArgs))
+            ElseIf TypeOf input Is String Then
+                HandleTelnetInput(session, DirectCast(input, String))
+            End If
+        End Sub
+
+        Private _composeTo As String = ""
+        Private _composeSubject As String = ""
+        Private _composeBody As New StringBuilder()
+
+        Private Sub HandleTelnetInput(session As ISession, input As String)
+            Dim cmd = input.Trim().ToUpper()
+
+            If _viewMode = EmailViewMode.Compose Then
+                HandleTelnetComposeInput(session, input)
+                Return
+            End If
+
+            If _viewMode = EmailViewMode.List Then
+                If Integer.TryParse(cmd, Nothing) Then
+                    _currentEmailIdx = Integer.Parse(cmd) - 1
+                    If _currentEmailIdx >= 0 AndAlso _currentEmailIdx < _emails.Count Then
+                        _viewMode = EmailViewMode.Read
+                    Else
+                        session.WriteLine("Invalid message number.")
+                    End If
+                Else
+                    Select Case cmd
+                        Case "Q"
+                            session.NavigateTo(New MainMenuScreen())
+                            Return
+                        Case "S"
+                            _viewMode = EmailViewMode.Compose
+                            _composeTo = ""
+                            _composeSubject = ""
+                            _composeBody.Clear()
+                        Case Else
+                            If Not String.IsNullOrEmpty(cmd) Then session.WriteLine("Invalid command.")
+                    End Select
+                End If
+            ElseIf _viewMode = EmailViewMode.Read Then
+                If String.IsNullOrEmpty(cmd) Then
+                    If _currentEmailIdx < _emails.Count - 1 Then
+                        _currentEmailIdx += 1
+                    Else
+                        _viewMode = EmailViewMode.List
+                    End If
+                Else
+                    Select Case cmd
+                        Case "B", "Q"
+                            _viewMode = EmailViewMode.List
+                        Case "D"
+                            _emailService.DeleteEmail(session.User.UserNumber, _emails(_currentEmailIdx).ID)
+                            _emails.RemoveAt(_currentEmailIdx)
+                            _viewMode = EmailViewMode.List
+                        Case "R"
+                            ' Extract useful info for reply
+                            Dim original = _emails(_currentEmailIdx)
+                            _viewMode = EmailViewMode.Compose
+                            _composeTo = original.FromUserNumber.ToString()
+                            _composeSubject = "Re: " & original.Title
+                            _composeBody.Clear()
+                            session.WriteLine("Replying to: " & original.FromName)
+                            session.WriteLine("Subject: " & _composeSubject)
+                            session.WriteLine("Enter message text (. to finish):")
+                        Case Else
+                            session.WriteLine("Invalid command.")
+                    End Select
+                End If
+            End If
+
+            RenderTelnet(session)
+        End Sub
+
+        Private Sub HandleTelnetComposeInput(session As ISession, input As String)
+            If String.IsNullOrEmpty(_composeTo) Then
+                _composeTo = input.Trim()
+                If String.IsNullOrEmpty(_composeTo) Then
+                    session.Write("To (User # or Name): ")
+                Else
+                    session.Write("Subject: ")
+                End If
+            ElseIf String.IsNullOrEmpty(_composeSubject) Then
+                _composeSubject = input.Trim()
+                If String.IsNullOrEmpty(_composeSubject) Then _composeSubject = "(No Subject)"
+                session.WriteLine("Enter message text (. on a line by itself to finish):")
+            Else
+                If input.Trim() = "." Then
+                    ' Send the email
+                    Dim targetNum = _userService.FindUser(_composeTo)
+                    If targetNum > 0 Then
+                        Dim targetUser = _userService.GetUser(targetNum)
+                        Dim msg As New EmailMessage With {
+                            .ToUserNumber = targetNum,
+                            .ToName = targetUser.Name,
+                            .FromName = session.User.Name,
+                            .FromUserNumber = session.User.UserNumber,
+                            .Title = _composeSubject,
+                            .Text = _composeBody.ToString().Trim(),
+                            .DatePosted = DateTime.Now
+                        }
+                        _emailService.SendEmail(msg)
+                        session.WriteLine("Email sent to " & targetUser.Name)
+                        _emails = _emailService.GetEmails(session.User.UserNumber)
+                        _viewMode = EmailViewMode.List
+                        RenderTelnet(session)
+                    Else
+                        session.WriteLine("User not found!")
+                        _viewMode = EmailViewMode.List
+                        RenderTelnet(session)
+                    End If
+                Else
+                    _composeBody.AppendLine(input)
+                End If
             End If
         End Sub
         
         Private Sub HandleTN3270Input(session As TN3270SessionAdapter, e As AidKeyEventArgs)
             Dim tn = session.TN3270Session
             
-            If e.AidKey = &H7D Then ' ENTER
+            If e.AidKey = AID.ENTER Then ' ENTER
                 If _viewMode = EmailViewMode.Compose Then
                     SendCurrent(session)
                     Return
@@ -187,7 +355,7 @@ Namespace WWIV.Screens
                 End If
                 
                 RenderTN3270(session)
-            ElseIf e.AidKey = &HC3 Then ' PF3
+            ElseIf e.AidKey = AID.PF3 Then ' PF3
                 If _viewMode = EmailViewMode.Compose OrElse _viewMode = EmailViewMode.Read Then
                     _viewMode = EmailViewMode.List
                     RenderTN3270(session)

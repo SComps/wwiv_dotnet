@@ -6,32 +6,32 @@ Imports TN3270Framework
 Imports wwiv3270.WWIV.Telnet
 Imports wwiv3270.WWIV.Manager
 Imports wwiv3270.WWIV.Adapters
-Imports wwiv3270.WWIV.Services
+Imports WWIV.Services
 
 Namespace WWIV
     Public Class BBS
         Private _tnListener As TN3270Listener
         Private _telnetListener As TelnetListener
-        Private _configService As Services.ConfigService
+        Private _configService As ConfigService
         
         Public Sub Start()
             Logger.Log("Initializing WWIV 3270 System...")
 
             ' Initialize Config
-            _configService = New Services.ConfigService()
+            _configService = New ConfigService()
             Logger.Log($"System Name: {_configService.Config.SystemName}")
             
             ' Initialize TN3270 Listener
-            _tnListener = New TN3270Listener(2323)
+            _tnListener = New TN3270Listener(_configService.Config.TN3270Port)
             AddHandler _tnListener.ConnectionReceived, AddressOf OnTNConnectionReceived
             _tnListener.Start()
-            Logger.Log($"TN3270 Listener started on port 2323")
+            Logger.Log($"TN3270 Listener started on port {_configService.Config.TN3270Port}")
 
             ' Initialize Telnet Listener
-            _telnetListener = New TelnetListener(23)
+            _telnetListener = New TelnetListener(_configService.Config.TelnetPort)
             AddHandler _telnetListener.ConnectionReceived, AddressOf OnTelnetConnectionReceived
             _telnetListener.Start()
-            Logger.Log($"Telnet Listener started on port 23")
+            Logger.Log($"Telnet Listener started on port {_configService.Config.TelnetPort}")
             
             Logger.Log("System is Running. Press Ctrl+C to stop.")
         End Sub

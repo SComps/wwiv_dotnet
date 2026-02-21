@@ -12,6 +12,7 @@
           "Microsoft.DotNet.ILCompiler": "9.0.13",
           "Microsoft.NET.ILLink.Tasks": "9.0.13",
           "TN3270Framework": "1.0.0",
+          "WWIV.Base": "1.0.0",
           "runtimepack.Microsoft.NETCore.App.Runtime.win-x64": "9.0.13"
         },
         "runtime": {
@@ -763,6 +764,14 @@
             "fileVersion": "1.0.0.0"
           }
         }
+      },
+      "WWIV.Base/1.0.0": {
+        "runtime": {
+          "WWIV.Base.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
       }
     }
   },
@@ -806,6 +815,11 @@
       "hashPath": "system.text.encoding.codepages.9.0.1.nupkg.sha512"
     },
     "TN3270Framework/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "WWIV.Base/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

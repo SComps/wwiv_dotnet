@@ -11,4 +11,15 @@
     <IsLocked>false</IsLocked>
     <Text>DOES THE MESSAGE BOARDS WORK?</Text>
   </Message>
+  <Message Type="MessageHeader">
+    <ID>3b052d3f-40ca-4bf9-b5bd-598f337ee5a2</ID>
+    <Title>Some stuff is working</Title>
+    <FromName>SCOTTJ</FromName>
+    <FromUserNumber>1</FromUserNumber>
+    <DatePosted>2026-02-15T12:41:57.4934521-05:00</DatePosted>
+    <IsDeleted>false</IsDeleted>
+    <IsAnonymous>false</IsAnonymous>
+    <IsLocked>false</IsLocked>
+    <Text>Some stuff is working, some isn't.  For the most part it's kinda stable, but we'll have to see.</Text>
+  </Message>
 </Messages>

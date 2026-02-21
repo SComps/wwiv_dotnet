@@ -3,7 +3,7 @@ Imports System.IO
 Imports System.Xml.Linq
 Imports System.Collections.Concurrent
 Imports System.Linq
-Imports wwiv3270.WWIV.Data
+Imports WWIV.Data
 
 Namespace WWIV.Services
     ''' <summary>

@@ -5,7 +5,7 @@ Imports System.IO
 Imports System.Threading.Tasks
 Imports System.Collections.Generic
 Imports wwiv3270.WWIV.Core
-Imports wwiv3270.WWIV.Data
+Imports WWIV.Data
 
 Namespace WWIV.Telnet
     ''' <summary>
@@ -109,6 +109,10 @@ Namespace WWIV.Telnet
 
         Public Sub WriteLine(text As String) Implements ISession.WriteLine
             Write(text & vbCrLf)
+        End Sub
+
+        Public Sub ClearScreen() Implements ISession.ClearScreen
+            Write(Util.Ansi.ClearScreen & Util.Ansi.Home)
         End Sub
 
         Public Sub NavigateTo(screen As IScreen) Implements ISession.NavigateTo
